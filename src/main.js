@@ -1,6 +1,5 @@
 import { loadRig } from './loadRig.js';
 import { drawPuppet } from './drawPuppet.js';
-import { createPoseLandmarker, MEDIAPIPE_VERSION } from './poseLandmarker.js';
 import { bindPoseFromLandmarks } from './bindPose.js';
 
 const canvas = document.getElementById('stage');
@@ -27,6 +26,8 @@ let mode = 'static';
 /** Selfie mirroring: preview + landmarks share the same flip. */
 const MIRROR = true;
 
+const LANDMARKER_TIMEOUT_MS = 25000;
+
 let landmarker = null;
 let landmarkerLoading = null;
 let mediaStream = null;
@@ -38,6 +39,7 @@ let prevAngles = new Map();
 let prevScale = 1;
 let fpsEma = 15;
 let lastFrameTs = 0;
+let mediapipeVersion = 'tasks-vision';
 
 const DETECT_MIN_MS = 50; // ~20 fps cap for detect; draw still on rAF
 
@@ -92,7 +94,6 @@ function setMode(next) {
   }
 }
 
-
 function getVideoCoverLayout() {
   const vw = video.videoWidth;
   const vh = video.videoHeight;
@@ -124,7 +125,6 @@ function drawCameraBackground() {
   }
   ctx.restore();
 
-  // dim so puppet stays readable
   ctx.fillStyle = 'rgba(26, 18, 12, 0.45)';
   ctx.fillRect(0, 0, cw, ch);
 }
@@ -153,12 +153,12 @@ function poseLoop(ts) {
         const lms = result?.landmarks?.[0];
         const layout = getVideoCoverLayout();
         const bound = bindPoseFromLandmarks(state.rig, lms, layout, {
-            mirror: MIRROR,
-            prevSmooth: smoothLm,
-            prevJoints,
-            prevAngles,
-            prevScale,
-          });
+          mirror: MIRROR,
+          prevSmooth: smoothLm,
+          prevJoints,
+          prevAngles,
+          prevScale,
+        });
         smoothLm = bound.smooth;
         if (bound.joints) prevJoints = bound.joints;
         prevAngles = bound.angles || prevAngles;
@@ -189,20 +189,80 @@ function poseLoop(ts) {
   );
 }
 
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(label + ' 逾時（' + ms / 1000 + 's）')), ms),
+    ),
+  ]);
+}
+
 async function ensureLandmarker() {
   if (landmarker) return landmarker;
   if (landmarkerLoading) return landmarkerLoading;
   landmarkerLoading = (async () => {
-    setStatus('載入 Pose 模型（' + MEDIAPIPE_VERSION + '）…');
-    landmarker = await createPoseLandmarker();
+    setStatus('載入 Pose 模組…');
+    const mod = await import('./poseLandmarker.js');
+    mediapipeVersion = mod.MEDIAPIPE_VERSION;
+    setStatus('載入 Pose 模型（' + mediapipeVersion + '）…');
+    landmarker = await withTimeout(
+      mod.createPoseLandmarker(),
+      LANDMARKER_TIMEOUT_MS,
+      'Pose 模型',
+    );
     setStatus('Pose 模型已就緒');
     return landmarker;
   })();
   try {
     return await landmarkerLoading;
-  } finally {
+  } catch (err) {
     landmarkerLoading = null;
+    throw err;
+  } finally {
+    if (landmarker) landmarkerLoading = null;
   }
+}
+
+async function openUserCamera() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error('此瀏覽器不支援 getUserMedia');
+  }
+
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user' },
+      audio: false,
+    });
+  } catch (err) {
+    if (err?.name === 'OverconstrainedError' || err?.name === 'ConstraintNotSatisfiedError') {
+      return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+    throw err;
+  }
+}
+
+function waitForVideoSize(vid, timeoutMs = 8000) {
+  if (vid.videoWidth > 0 && vid.videoHeight > 0) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => {
+      cleanup();
+      reject(new Error('鏡頭畫面尺寸未就緒'));
+    }, timeoutMs);
+    const onMeta = () => {
+      if (vid.videoWidth > 0) {
+        cleanup();
+        resolve();
+      }
+    };
+    const cleanup = () => {
+      clearTimeout(t);
+      vid.removeEventListener('loadedmetadata', onMeta);
+      vid.removeEventListener('resize', onMeta);
+    };
+    vid.addEventListener('loadedmetadata', onMeta);
+    vid.addEventListener('resize', onMeta);
+  });
 }
 
 async function startCamera() {
@@ -216,13 +276,10 @@ async function startCamera() {
 
   try {
     btnStartCam.disabled = true;
-    setStatus('請求鏡頭權限…');
-    await ensureLandmarker();
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: 640, height: 480 },
-      audio: false,
-    });
+    // Camera first (gesture + permission), then model — better iPad UX
+    setStatus('請求鏡頭權限…');
+    const stream = await openUserCamera();
     mediaStream = stream;
     video.srcObject = stream;
     video.muted = true;
@@ -230,6 +287,24 @@ async function startCamera() {
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
     await video.play();
+    await waitForVideoSize(video);
+
+    if (!rafId) rafId = requestAnimationFrame(poseLoop);
+    btnStopCam.disabled = false;
+    setStatus('鏡頭已開 · 載入 Pose 模型中…');
+
+    try {
+      await ensureLandmarker();
+    } catch (modelErr) {
+      console.error(modelErr);
+      setStatus(
+        '鏡頭可用，但 Pose 模型失敗：' +
+          (modelErr?.message || String(modelErr)) +
+          '（可返靜態預覽）',
+        true,
+      );
+      return;
+    }
 
     smoothLm = null;
     prevJoints = null;
@@ -238,13 +313,16 @@ async function startCamera() {
     lastDetectTs = 0;
     lastFrameTs = 0;
 
-    if (!rafId) rafId = requestAnimationFrame(poseLoop);
-    btnStopCam.disabled = false;
     setStatus('鏡頭跟姿中 · 請站入畫面');
   } catch (err) {
     console.error(err);
-    setStatus('無法開啟鏡頭：' + (err?.message || String(err)), true);
+    const name = err?.name || '';
+    let tip = err?.message || String(err);
+    if (name === 'NotAllowedError') tip = '未允許相機權限';
+    else if (name === 'NotFoundError') tip = '找不到鏡頭';
+    setStatus('無法開啟鏡頭：' + tip + '（可返靜態預覽）', true);
     stopCamera();
+    // Offer static fallback without forcing mode change mid-gesture
   } finally {
     btnStartCam.disabled = false;
   }
