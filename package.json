@@ -1,8 +1,8 @@
 {
   "name": "shadow-puppet",
   "private": true,
-  "version": "0.1.0",
-  "description": "皮影戲・西遊記 — 教學試作／校本自維 (P0+P1)",
+  "version": "0.2.0",
+  "description": "皮影戲・西遊記 — 教學試作／校本自維 (P0+P1+P4 Pose)",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "vite": "^5.4.11"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.0.1"
   }
 }

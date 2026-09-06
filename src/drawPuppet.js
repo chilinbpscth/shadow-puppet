@@ -1,11 +1,11 @@
 /**
- * Canvas2D static compose of shadow-puppet parts using pivots + drawOrder.
+ * Canvas2D compose of shadow-puppet parts using pivots + drawOrder.
+ * Static mode: resolvePose from defaultPose tree.
+ * Pose mode: pass opts.joints from bindPose (absolute canvas coords).
  */
 
 /**
  * Resolve absolute joint transforms for default standing / T-ish pose.
- * defaultPose.x/y are offsets relative to parent joint (or canvas origin for roots),
- * in part-local pixel units before global scale.
  *
  * @param {object} rig
  * @param {{ cx: number, cy: number, scale: number }} layout
@@ -57,12 +57,17 @@ export function resolvePose(rig, layout) {
 }
 
 /**
- * Draw all parts (sorted by drawOrder) and optional debug overlays.
- *
  * @param {CanvasRenderingContext2D} ctx
  * @param {object} rig
  * @param {Map<string, HTMLImageElement>} images
- * @param {{ showDebug?: boolean, cx?: number, cy?: number, scale?: number }} [opts]
+ * @param {{
+ *   showDebug?: boolean,
+ *   cx?: number,
+ *   cy?: number,
+ *   scale?: number,
+ *   joints?: Map<string, { x: number, y: number, rotation: number }> | null,
+ *   clear?: boolean,
+ * }} [opts]
  */
 export function drawPuppet(ctx, rig, images, opts = {}) {
   const canvas = ctx.canvas;
@@ -72,22 +77,36 @@ export function drawPuppet(ctx, rig, images, opts = {}) {
     scale: opts.scale ?? 1,
   };
   const showDebug = !!opts.showDebug;
-  const pose = resolvePose(rig, layout);
+  const clear = opts.clear !== false;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  let pose;
+  if (opts.joints && opts.joints.size) {
+    pose = new Map();
+    for (const part of rig.parts) {
+      const j = opts.joints.get(part.id);
+      if (!j) continue;
+      pose.set(part.id, { x: j.x, y: j.y, rotation: j.rotation, part });
+    }
+  } else {
+    pose = resolvePose(rig, layout);
+  }
 
-  const g = ctx.createRadialGradient(
-    layout.cx,
-    layout.cy,
-    40,
-    layout.cx,
-    layout.cy + 80,
-    Math.max(canvas.width, canvas.height) * 0.55,
-  );
-  g.addColorStop(0, 'rgba(90, 55, 30, 0.35)');
-  g.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (clear) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const g = ctx.createRadialGradient(
+      layout.cx,
+      layout.cy,
+      40,
+      layout.cx,
+      layout.cy + 80,
+      Math.max(canvas.width, canvas.height) * 0.55,
+    );
+    g.addColorStop(0, 'rgba(90, 55, 30, 0.35)');
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 
   const ordered = [...rig.parts].sort(
     (a, b) => (a.drawOrder ?? 0) - (b.drawOrder ?? 0),

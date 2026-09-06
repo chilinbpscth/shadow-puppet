@@ -1,47 +1,55 @@
 # 皮影戲・西遊記
 
-**教學試作／校本自維** — 小學視藝皮影 Web App（Vite + vanilla JS + Canvas2D）。
+**教學試作／校本自維** — Vite + vanilla JS + Canvas2D。
 
 角色 v1：孫悟空（wukong）。
 
-## 現況（P0＋P1）
+## 現況（P0＋P1＋P4）
 
 | 階段 | 狀態 | 內容 |
 |------|------|------|
-| **P0** | 完成 | public/characters/wukong/rig.json ＋各節 PNG 剪影 |
-| **P1** | 完成 | 靜態合成頁：pivot／drawOrder 驗證，debug 支點與骨骼線 |
-| **P2** | 待做 | color.html 填色 + IndexedDB |
-| **P3** | 待做 | 骨架 debug overlay 打磨 |
-| **P4** | 待做 | Pose 綁姿態 |
-| **P5** | 待做 | iPad Safari 硬化 |
-
-設計約束見：/workspace/ceate-arts/皮影戲/DESIGN.md。
+| **P0** | 完成 | rig.json ＋各節 PNG |
+| **P1** | 完成 | 靜態合成／debug pivots |
+| **P2** | 待做 | color.html 填色 |
+| **P3** | 待做 | 骨架 overlay 打磨 |
+| **P4** | 完成 | MediaPipe Pose lite 鏡頭跟姿 |
+| **P5** | 待做 | iPad 硬化 |
 
 ## 本機執行
 
-在專案目錄：
-
-    cd /workspace/shadow-puppet
     npm i
     npm run dev
 
-瀏覽器開啟終端顯示的本機網址（預設 http://localhost:5173/）。
+相機需 localhost 或 HTTPS。建置：npm run build
 
-建置：
+## 鏡頭跟姿（P4）
 
-    npm run build
-    npm run preview
+1. 選「鏡頭跟姿」→ 按「開啟鏡頭」（tap 才請求相機）。
+2. facingMode user、640x480；video: autoplay muted playsinline。
+3. 鏡像：開（預覽與綁點同一水平翻轉）。
+4. 綁定：shoulderMid/hipMid、不拉長、vis hold、EMA、scale 0.7-1.4。
+   tail 不跟 pose；staff 跟腕 16。
 
-## 身段（凍死清單）
+### MediaPipe 釘版
 
-head, torso, upperArmL/R, lowerArmL/R, thighL/R, shinL/R, tail（唔跟 pose）, staff（可選，跟 landmark 16）。
+- package: @mediapipe/tasks-vision@1.0.1
+- WASM: public/mediapipe/wasm/
+- Model: public/mediapipe/pose_landmarker_lite.task (float16/1)
+- 見 public/mediapipe/VERSION.txt
 
-近端預留約 12–20% 榫／圓盤重疊。PNG 為深棕／黑剪影 placeholder。
+Pages 離線載入 WASM 與 .task，不依賴執行期 CDN。
 
-## 部署備註
+## iPad Safari
 
-目標 GitHub Pages：chilinbpscth/shadow-puppet — 尚未設定（開 repo／Pages 前需問用家）。
+- HTTPS 或本機；按鈕 tap 先開相機。
+- 目標約 12-20 fps；lite 模型。
+- 授權被拒時請到設定重新允許。
 
-## 非目標（本階段）
+## 部署
 
-相機／姿態追蹤、Hands／Face、自由畫 UI、多角色、PWA、雲端儲存、第三方 AR SDK。
+GitHub Pages：gh-pages 分支內容為 dist/。
+站點：chilinbpscth.github.io/shadow-puppet/
+
+## 非目標
+
+Hands/Face、自由畫、多角色、PWA、React/TS/Three、8th Wall。

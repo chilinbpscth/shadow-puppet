@@ -1,0 +1,4 @@
+tasks-vision: 1.0.1
+model: pose_landmarker_lite.task float16/1
+wasm: public/mediapipe/wasm
+mode: VIDEO image landmarks

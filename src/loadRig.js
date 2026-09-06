@@ -2,7 +2,7 @@
  * Load character rig.json and part PNG images.
  */
 
-const RIG_URL = '/characters/wukong/rig.json';
+const RIG_URL = './characters/wukong/rig.json';
 
 /**
  * @param {string} [rigUrl]
