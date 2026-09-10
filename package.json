@@ -2,7 +2,7 @@
   "name": "shadow-puppet",
   "private": true,
   "version": "0.2.0",
-  "description": "皮影戲・西遊記 — 教學試作／校本自維 (P0+P1+P4 Pose)",
+  "description": "皮影戲・西遊記 — 教學試作／校本自維 (Phase A 手動操縱)",
   "type": "module",
   "scripts": {
     "dev": "vite",

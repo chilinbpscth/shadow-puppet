@@ -188,3 +188,42 @@ function drawDebug(ctx, rig, pose, scale) {
 
   ctx.restore();
 }
+
+
+/**
+ * Draw visible joint handles (classroom finger targets).
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {Array<{ id: string, kind: string, x: number, y: number }>} handles
+ * @param {{ activeId?: string | null, hintId?: string | null, pulse?: number }} [opts]
+ */
+export function drawHandles(ctx, handles, opts = {}) {
+  const activeId = opts.activeId || null;
+  const hintId = opts.hintId || null;
+  const pulse = opts.pulse ?? 0;
+  ctx.save();
+  for (const h of handles) {
+    const isActive = h.id === activeId;
+    const isHint = h.id === hintId;
+    const r = isActive ? 16 : isHint ? 14 + Math.sin(pulse) * 3 : 12;
+    ctx.beginPath();
+    ctx.arc(h.x, h.y, r, 0, Math.PI * 2);
+    if (h.kind === 'torso') {
+      ctx.fillStyle = isActive ? 'rgba(255, 200, 80, 0.95)' : 'rgba(255, 180, 60, 0.88)';
+    } else if (h.kind === 'wrist') {
+      ctx.fillStyle = isActive ? 'rgba(120, 220, 255, 0.95)' : 'rgba(80, 200, 255, 0.88)';
+    } else {
+      ctx.fillStyle = isActive ? 'rgba(180, 255, 140, 0.95)' : 'rgba(140, 220, 100, 0.88)';
+    }
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(255, 248, 230, 0.95)';
+    ctx.stroke();
+
+    if (isHint) {
+      ctx.fillStyle = 'rgba(255, 240, 200, 0.98)';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('← 拖我', h.x + 18, h.y + 5);
+    }
+  }
+  ctx.restore();
+}
