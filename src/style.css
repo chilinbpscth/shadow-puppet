@@ -89,6 +89,13 @@ html, body {
   .layout { grid-template-columns: 1fr; }
 }
 
+.stage-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
 .stage-wrap {
   position: relative;
   background: linear-gradient(180deg, #4a3020 0%, var(--stage) 100%);
@@ -131,6 +138,98 @@ html, body {
 
 .drag-hint.hidden { opacity: 0; }
 
+/* N2 — persistent demo silhouette notice */
+.demo-notice {
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(196, 168, 130, 0.45);
+  background: rgba(42, 28, 18, 0.92);
+  color: #ffe8c0;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+/* N3 — rod toolbar */
+.rod-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.control-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+}
+
+.check.compact {
+  margin-bottom: 0;
+  font-size: 0.92rem;
+}
+
+.rod-rail {
+  position: relative;
+  height: 64px;
+  border-radius: 10px;
+  border: 1px dashed rgba(196, 168, 130, 0.4);
+  background:
+    linear-gradient(180deg, rgba(60, 40, 24, 0.9), rgba(30, 20, 12, 0.95));
+  touch-action: none;
+  user-select: none;
+}
+
+.rod-rail[hidden] {
+  display: none !important;
+}
+
+.rod-grip {
+  position: absolute;
+  bottom: 6px;
+  transform: translateX(-50%);
+  width: 52px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 2;
+}
+
+.rod-grip.dragging,
+.rod-grip:active {
+  cursor: grabbing;
+}
+
+.rod-grip-knob {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #fff8e6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.rod-grip--torso .rod-grip-knob {
+  background: radial-gradient(circle at 35% 30%, #ffd878, #c48a20);
+}
+
+.rod-grip--wrist .rod-grip-knob {
+  background: radial-gradient(circle at 35% 30%, #9ee4ff, #2a8fb8);
+}
+
+.rod-grip-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -152,11 +251,32 @@ html, body {
 .mission-cards {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
   margin-bottom: 1rem;
 }
 
 .mission-card {
+  display: grid;
+  grid-template-columns: 1fr 64px;
+  grid-template-areas:
+    "select thumb"
+    "apply apply";
+  gap: 0.35rem 0.5rem;
+  width: 100%;
+  padding: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #22160f;
+}
+
+.mission-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(196, 92, 38, 0.45);
+  background: #332015;
+}
+
+.mission-select {
+  grid-area: select;
   display: grid;
   grid-template-columns: 28px 1fr auto;
   grid-template-areas:
@@ -165,19 +285,13 @@ html, body {
   gap: 0.15rem 0.5rem;
   width: 100%;
   text-align: left;
-  padding: 0.55rem 0.65rem;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #22160f;
+  padding: 0.35rem 0.4rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
   color: inherit;
   font: inherit;
   cursor: pointer;
-}
-
-.mission-card.active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px rgba(196, 92, 38, 0.45);
-  background: #332015;
 }
 
 .mission-num {
@@ -216,6 +330,57 @@ html, body {
 .mission-save[data-saved="1"] {
   color: var(--ok);
   font-weight: 600;
+}
+
+.mission-thumb {
+  grid-area: thumb;
+  width: 64px;
+  height: 72px;
+  border-radius: 8px;
+  border: 1px solid rgba(196, 168, 130, 0.35);
+  background: #1a100a;
+  position: relative;
+  overflow: hidden;
+  align-self: center;
+}
+
+.sil-figure {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: center 8px;
+}
+
+/* CSS silhouette previews — distinct readable poses */
+.sil-depart .sil-figure {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 72'%3E%3Cg fill='%232a1810' stroke='%23e8c990' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='30' cy='12' r='6'/%3E%3Cline x1='30' y1='18' x2='28' y2='38'/%3E%3Cline x1='28' y1='24' x2='12' y2='20'/%3E%3Cline x1='28' y1='24' x2='46' y2='34'/%3E%3Cline x1='28' y1='38' x2='16' y2='58'/%3E%3Cline x1='28' y1='38' x2='42' y2='62'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.sil-danger .sil-figure {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 72'%3E%3Cg fill='%232a1810' stroke='%23e8c990' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='34' cy='14' r='6'/%3E%3Cline x1='32' y1='20' x2='30' y2='40'/%3E%3Cline x1='30' y1='26' x2='14' y2='12'/%3E%3Cline x1='30' y1='26' x2='50' y2='10'/%3E%3Cline x1='30' y1='40' x2='20' y2='56'/%3E%3Cline x1='30' y1='40' x2='42' y2='56'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.sil-battle .sil-figure {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 72'%3E%3Cg fill='%232a1810' stroke='%23e8c990' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='28' cy='12' r='6'/%3E%3Cline x1='28' y1='18' x2='28' y2='38'/%3E%3Cline x1='28' y1='24' x2='14' y2='32'/%3E%3Cline x1='28' y1='24' x2='44' y2='14'/%3E%3Cline x1='44' y1='8' x2='44' y2='28'/%3E%3Cline x1='28' y1='38' x2='18' y2='60'/%3E%3Cline x1='28' y1='38' x2='40' y2='60'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.btn-apply-pose {
+  grid-area: apply;
+  width: 100%;
+  min-height: 40px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(196, 92, 38, 0.65);
+  border-radius: 8px;
+  background: #4a2818;
+  color: #fff4e4;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.btn-apply-pose:hover {
+  filter: brightness(1.1);
 }
 
 .check {

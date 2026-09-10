@@ -10,6 +10,8 @@ import {
   hitTestHandle,
   applyDrag,
 } from './dragPose.js';
+import { applyPreset, getPreset } from './posePresets.js';
+import { createRodControls } from './rodControls.js';
 
 const canvas = document.getElementById('stage');
 const ctx = canvas.getContext('2d');
@@ -31,6 +33,10 @@ const bodyControls = document.getElementById('bodyControls');
 const dragHintEl = document.getElementById('dragHint');
 const taskMain = document.getElementById('taskMain');
 const missionCardsEl = document.getElementById('missionCards');
+const modeRods = document.getElementById('modeRods');
+const modeJoints = document.getElementById('modeJoints');
+const rodRail = document.getElementById('rodRail');
+const rodToolbar = document.getElementById('rodToolbar');
 
 /** @type {{ rig: object, images: Map<string, HTMLImageElement> } | null} */
 let state = null;
@@ -63,6 +69,9 @@ let dragMeta = null;
 let hasDragged = false;
 let hintPulse = 0;
 let animRaf = 0;
+
+/** @type {ReturnType<typeof createRodControls> | null} */
+let rodControls = null;
 
 const MISSIONS = [
   {
@@ -122,10 +131,14 @@ function updateMissionUI() {
   taskMain.textContent = m.task;
   const tipEl = document.getElementById('artTip');
   if (tipEl) tipEl.textContent = m.tip;
-  for (const btn of missionCardsEl.querySelectorAll('.mission-card')) {
-    const i = Number(btn.dataset.mission);
-    btn.classList.toggle('active', i === missionIndex);
-    const saveEl = btn.querySelector('.mission-save');
+  for (const card of missionCardsEl.querySelectorAll('.mission-card')) {
+    const i = Number(card.dataset.mission);
+    card.classList.toggle('active', i === missionIndex);
+    const selectBtn = card.querySelector('.mission-select');
+    if (selectBtn) {
+      selectBtn.setAttribute('aria-pressed', i === missionIndex ? 'true' : 'false');
+    }
+    const saveEl = card.querySelector('.mission-save');
     if (saveEl) {
       const ok = !!savedPoses[i];
       saveEl.dataset.saved = ok ? '1' : '0';
@@ -137,6 +150,13 @@ function updateMissionUI() {
 function jointsForDraw() {
   if (!state || !manualPose) return null;
   return resolveManualJoints(state.rig, manualPose);
+}
+
+function showJointHandles() {
+  return (
+    mode === 'manual' &&
+    (!rodControls || rodControls.getMode() === 'joints')
+  );
 }
 
 function renderManual() {
@@ -151,15 +171,23 @@ function renderManual() {
     joints,
     clear: true,
   });
-  const hintId =
-    !hasDragged && handles.length
-      ? handles.find((h) => h.kind === 'wrist')?.id || handles[0].id
-      : null;
-  drawHandles(ctx, handles, {
-    activeId: activeHandle?.id || null,
-    hintId,
-    pulse: hintPulse,
-  });
+
+  if (rodControls && rodControls.getMode() === 'rods') {
+    rodControls.drawRods(ctx);
+    rodControls.syncGripPositions();
+  }
+
+  if (showJointHandles()) {
+    const hintId =
+      !hasDragged && handles.length
+        ? handles.find((h) => h.kind === 'wrist')?.id || handles[0].id
+        : null;
+    drawHandles(ctx, handles, {
+      activeId: activeHandle?.id || null,
+      hintId,
+      pulse: hintPulse,
+    });
+  }
 }
 
 function ensureManualAnim() {
@@ -183,18 +211,45 @@ function stopManualAnim() {
   }
 }
 
+function setControlMode(next) {
+  const m = next === 'joints' ? 'joints' : 'rods';
+  if (modeRods) modeRods.checked = m === 'rods';
+  if (modeJoints) modeJoints.checked = m === 'joints';
+  if (rodControls) rodControls.setMode(m);
+  if (dragHintEl) {
+    dragHintEl.textContent =
+      m === 'rods'
+        ? '\u63d0\u793a\uff1a\u62d6\u52d5\u4e0b\u65b9\u865b\u64ec\u68cd\u64fa\u59ff\u52e2'
+        : '\u63d0\u793a\uff1a\u62d6\u52d5\u624b\u8173\u5713\u9ede\u64fa\u59ff\u52e2';
+  }
+  if (mode === 'manual') {
+    renderManual();
+    setStatus(
+      m === 'rods'
+        ? '\u68cd\u63a7\uff1a\u62d6\u4e0b\u65b9\u4e09\u652f\u68cd\uff08\u8ec0\u5e79\uff0f\u5de6\u624b\uff0f\u53f3\u624b\uff09'
+        : '\u95dc\u7bc0\u5fae\u8abf\uff1a\u62d6\u5713\u9ede\u7d30\u8abf',
+    );
+  }
+}
+
 function setMode(next) {
   mode = next;
   const isBody = mode === 'body';
   modeManual.checked = !isBody;
   modeBody.checked = isBody;
   bodyControls.hidden = !isBody;
+  if (rodToolbar) rodToolbar.hidden = isBody;
   if (!isBody) {
     stopCamera();
     stopManualAnim();
     renderManual();
     ensureManualAnim();
-    setStatus('\u624b\u52d5\u64cd\u7e31\uff1a\u62d6\u5713\u9ede\u64fa\u59ff\u52e2');
+    const cm = rodControls?.getMode() || 'rods';
+    setStatus(
+      cm === 'rods'
+        ? '\u624b\u52d5\u64cd\u7e31\uff1a\u68cd\u63a7\u64fa\u59ff\u52e2'
+        : '\u624b\u52d5\u64cd\u7e31\uff1a\u62d6\u5713\u9ede\u64fa\u59ff\u52e2',
+    );
   } else {
     stopManualAnim();
     setStatus(
@@ -479,6 +534,8 @@ function canvasPointFromEvent(ev) {
 
 function onPointerDown(ev) {
   if (mode !== 'manual' || !state || !manualPose) return;
+  // In rod mode, joint dots are hidden — ignore canvas joint hits
+  if (rodControls && rodControls.getMode() === 'rods') return;
   const pt = canvasPointFromEvent(ev);
   if (!pt) return;
   const hit = hitTestHandle(handles, pt.x, pt.y);
@@ -509,7 +566,6 @@ function onPointerMove(ev) {
   if (!pt) return;
   ev.preventDefault();
   applyDrag(state.rig, manualPose, activeHandle, pt.x, pt.y, dragMeta);
-  // refresh handle positions for continuous hit of same handle kind
   const joints = resolveManualJoints(state.rig, manualPose);
   handles = getHandles(state.rig, manualPose, joints);
   const refreshed = handles.find((h) => h.id === activeHandle.id);
@@ -526,6 +582,14 @@ function onPointerUp(ev) {
     canvas.releasePointerCapture(ev.pointerId);
   } catch (_) {}
   renderManual();
+}
+
+function markInteracted() {
+  if (!hasDragged) {
+    hasDragged = true;
+    dragHintEl?.classList.add('hidden');
+    stopManualAnim();
+  }
 }
 
 function resetStanding() {
@@ -545,6 +609,26 @@ function resetStanding() {
     prevScale = 1;
     setStatus('\u5df2\u6e05\u9664\u8ddf\u59ff\u5e73\u6ed1\u72c0\u614b');
   }
+}
+
+function applyMissionPreset(i) {
+  if (!state || !manualPose) return;
+  if (mode !== 'manual') setMode('manual');
+  const ok = applyPreset(manualPose, state.rig, layoutCenter(), i);
+  if (!ok) {
+    setStatus('\u627e\u4e0d\u5230\u9810\u8a2d\u59ff\u52e2', true);
+    return;
+  }
+  markInteracted();
+  missionIndex = i;
+  updateMissionUI();
+  renderManual();
+  const preset = getPreset(i);
+  setStatus(
+    '\u5df2\u5957\u7528\u300c' +
+      (preset?.title || MISSIONS[i].title) +
+      '\u300d\u59ff\u52e2\uff08\u53ef\u7e7c\u7e8c\u62d6\u52d5\u8abf\u6574\uff09',
+  );
 }
 
 function saveCurrentPose() {
@@ -640,6 +724,12 @@ function bindUi() {
   modeBody.addEventListener('change', () => {
     if (modeBody.checked) setMode('body');
   });
+  modeRods?.addEventListener('change', () => {
+    if (modeRods.checked) setControlMode('rods');
+  });
+  modeJoints?.addEventListener('change', () => {
+    if (modeJoints.checked) setControlMode('joints');
+  });
   debugToggle.addEventListener('change', () => {
     if (mode === 'manual') renderManual();
   });
@@ -670,16 +760,28 @@ function bindUi() {
   });
 
   missionCardsEl.addEventListener('click', (ev) => {
-    const btn = ev.target.closest('.mission-card');
-    if (!btn) return;
-    stopPlayback();
-    selectMission(Number(btn.dataset.mission));
+    const applyBtn = ev.target.closest('.btn-apply-pose');
+    if (applyBtn) {
+      stopPlayback();
+      applyMissionPreset(Number(applyBtn.dataset.apply));
+      return;
+    }
+    const selectBtn = ev.target.closest('.mission-select');
+    if (selectBtn) {
+      stopPlayback();
+      selectMission(Number(selectBtn.dataset.mission));
+      return;
+    }
   });
 
   canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointermove', onPointerMove);
   canvas.addEventListener('pointerup', onPointerUp);
   canvas.addEventListener('pointercancel', onPointerUp);
+
+  window.addEventListener('resize', () => {
+    if (rodControls && mode === 'manual') rodControls.syncGripPositions();
+  });
 }
 
 async function init() {
@@ -688,15 +790,30 @@ async function init() {
     state = await loadRig();
     fillPartList(state.rig);
     manualPose = createManualPose(state.rig, layoutCenter());
+
+    if (rodRail) {
+      rodControls = createRodControls({
+        railEl: rodRail,
+        canvas,
+        getPose: () => manualPose,
+        getRig: () => state?.rig || null,
+        onPoseChange: () => {
+          markInteracted();
+          if (mode === 'manual') renderManual();
+        },
+      });
+    }
+
     bindUi();
     updateMissionUI();
     setMode('manual');
+    setControlMode('rods');
     setStatus(
       '\u5df2\u8f09\u5165 ' +
         state.rig.parts.length +
         ' \u4ef6\u8eab\u6bb5 \u00b7 ' +
         state.rig.labelZh +
-        ' \u2014 \u62d6\u5713\u9ede\u958b\u59cb',
+        ' \u2014 \u53ef\u5957\u7528\u59ff\u52e2\u6216\u68cd\u63a7',
     );
   } catch (err) {
     console.error(err);
