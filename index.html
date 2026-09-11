@@ -26,9 +26,10 @@
           <canvas id="stage" width="720" height="900" aria-label="皮影合成畫布"></canvas>
           <p class="drag-hint" id="dragHint">提示：拖動手腳圓點或下方虛擬棍擺姿勢</p>
         </div>
-        <p class="demo-notice" id="demoNotice" role="note">
-          目前使用示範剪影，可先試姿勢與操控；自選填色及合成將於 B 版加入。
-        </p>
+        <div class="demo-notice" id="demoNotice" role="note">
+          <span id="demoNoticeText">正在檢查填色…</span>
+          <div class="notice-actions" id="demoNoticeActions"></div>
+        </div>
         <div class="rod-toolbar" id="rodToolbar">
           <div class="control-mode-row" role="radiogroup" aria-label="操偶方式">
             <label class="check compact"><input type="radio" name="controlMode" id="modeRods" value="rods" checked /> <span>棍控</span></label>

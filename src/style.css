@@ -484,3 +484,40 @@ html, body {
   pointer-events: none;
   overflow: hidden;
 }
+
+
+/* P2 — color notice on stage */
+.demo-notice.has-colored {
+  border-color: rgba(157, 206, 138, 0.55);
+  color: #d8f0c8;
+}
+
+.demo-notice .notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.45rem;
+}
+
+.demo-notice .btn-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff8ef;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.demo-notice .btn-inline.secondary {
+  background: transparent;
+  color: #ffe8c0;
+  border-color: rgba(196, 168, 130, 0.55);
+}

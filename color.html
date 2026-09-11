@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>填色・皮影戲・西遊記</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/color.css" />
+  </head>
+  <body class="color-page">
+    <header class="app-header">
+      <div>
+        <h1>填色・孫悟空</h1>
+        <p class="badge">教學試作／校本自維</p>
+      </div>
+      <p class="char-label" id="progressLabel">身段 0／0</p>
+    </header>
+
+    <div class="task-bar color-task">
+      <p class="task-main" id="taskMain">選顏色，再點身段上的區域填色。</p>
+      <p class="task-steps">① 選身段　② 選色並點擊填色　③ 儲存　④ 進入演出</p>
+    </div>
+
+    <main class="color-layout">
+      <aside class="color-parts panel" aria-label="身段清單">
+        <h2>身段</h2>
+        <ul id="partPicker" class="part-picker" role="listbox" aria-label="選擇身段"></ul>
+      </aside>
+
+      <section class="color-stage-column">
+        <div class="color-canvas-wrap" id="canvasWrap">
+          <canvas id="colorCanvas" width="160" height="160" aria-label="填色畫布"></canvas>
+        </div>
+        <p class="color-hint">點擊不透明區域填色；透明區與黑色輪廓不會被填滿。支援觸控。</p>
+        <p id="colorStatus" class="status" role="status"></p>
+      </section>
+
+      <aside class="color-tools panel">
+        <h2>色板</h2>
+        <div id="palette" class="palette" role="listbox" aria-label="色板"></div>
+
+        <div class="color-actions">
+          <button type="button" id="btnUndo" class="btn secondary" disabled>復原</button>
+          <button type="button" id="btnReset" class="btn secondary">重設此節</button>
+          <button type="button" id="btnSave" class="btn">儲存填色</button>
+          <button type="button" id="btnNext" class="btn secondary">下一節</button>
+          <a id="btnStage" class="btn primary-done link-btn" href="./index.html">進入演出</a>
+        </div>
+      </aside>
+    </main>
+
+    <script type="module" src="/src/colorMain.js"></script>
+  </body>
+</html>

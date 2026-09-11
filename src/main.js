@@ -784,6 +784,33 @@ function bindUi() {
   });
 }
 
+
+function updateColorNotice(hasColored) {
+  const notice = document.getElementById('demoNotice');
+  const textEl = document.getElementById('demoNoticeText');
+  const actions = document.getElementById('demoNoticeActions');
+  if (!notice || !textEl || !actions) return;
+  actions.innerHTML = '';
+  if (hasColored) {
+    notice.classList.add('has-colored');
+    textEl.textContent = '\u5df2\u8f09\u5165\u4f60\u7684\u586b\u8272';
+    const edit = document.createElement('a');
+    edit.href = './color.html';
+    edit.className = 'btn-inline secondary';
+    edit.textContent = '\u518d\u6539\u586b\u8272';
+    actions.appendChild(edit);
+  } else {
+    notice.classList.remove('has-colored');
+    textEl.textContent =
+      '\u9084\u6c92\u6709\u586b\u8272\u4f5c\u54c1 \u2014 \u5148\u70ba\u5b6b\u609f\u7a7a\u7684\u8eab\u6bb5\u586b\u8272\uff0c\u518d\u56de\u4f86\u64fa\u59ff\u52e2\u3002';
+    const go = document.createElement('a');
+    go.href = './color.html';
+    go.className = 'btn-inline';
+    go.textContent = '\u5148\u53bb\u586b\u8272';
+    actions.appendChild(go);
+  }
+}
+
 async function init() {
   try {
     setStatus('\u8f09\u5165 rig \u8207\u8eab\u6bb5\u5716\u7247\u2026');
@@ -806,6 +833,7 @@ async function init() {
 
     bindUi();
     updateMissionUI();
+    updateColorNotice(!!state.hasColored);
     setMode('manual');
     setControlMode('rods');
     setStatus(
@@ -813,7 +841,9 @@ async function init() {
         state.rig.parts.length +
         ' \u4ef6\u8eab\u6bb5 \u00b7 ' +
         state.rig.labelZh +
-        ' \u2014 \u53ef\u5957\u7528\u59ff\u52e2\u6216\u68cd\u63a7',
+        (state.hasColored
+          ? ' \u2014 \u5df2\u7528\u4f60\u7684\u586b\u8272'
+          : ' \u2014 \u53ef\u5957\u7528\u59ff\u52e2\u6216\u68cd\u63a7'),
     );
   } catch (err) {
     console.error(err);
