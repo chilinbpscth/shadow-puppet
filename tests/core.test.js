@@ -227,3 +227,53 @@ test('cropped image grip coordinates keep the staff at the actual painted hand',
   assert.equal(joints.get('staff').x,wrist.x);
   assert.equal(joints.get('staff').y,wrist.y);
 });
+
+
+test('turning mirrors every joint and the painted hand grip while preserving connected staff', () => {
+  const right=createManualPose(rig,{cx:450,cy:310,scale:.62});
+  const left={...right,facing:-1};
+  const a=resolveManualJoints(rig,right),b=resolveManualJoints(rig,left);
+  for(const [id,node] of a){
+    assert.ok(Math.abs(b.get(id).x-(900-node.x))<1e-9);
+    assert.equal(b.get(id).y,node.y);
+  }
+  const wrist=distalTip(b.get('lowerArmR'),left.scale);
+  assert.ok(Math.abs(wrist.x-b.get('staff').x)<1e-9);
+  assert.ok(Math.abs(wrist.y-b.get('staff').y)<1e-9);
+});
+
+test('left-facing hand drag is the exact reflection of right-facing drag', () => {
+  const right=createManualPose(rig,{cx:450,cy:310,scale:.62});
+  const left=createManualPose(rig,{cx:450,cy:310,scale:.62});left.facing=-1;
+  const handle={kind:'wrist',chain:['upperArmR','lowerArmR']};
+  applyDrag(rig,right,handle,550,280);
+  applyDrag(rig,left,handle,350,280);
+  assert.deepEqual(left.localRot,right.localRot);
+  const a=distalTip(resolveManualJoints(rig,right).get('lowerArmR'),right.scale);
+  const b=distalTip(resolveManualJoints(rig,left).get('lowerArmR'),left.scale);
+  assert.ok(Math.abs(a.x+b.x-900)<1e-9);
+  assert.ok(Math.abs(a.y-b.y)<1e-9);
+});
+
+test('facing survives clone, save, reload and old saves default right', async () => {
+  const {clonePose,applyPose}=await import('../src/dragPose.js');
+  const left=createManualPose(rig,{cx:450,cy:310,scale:.62});left.facing=-1;
+  const saved=encodePose(clonePose(left),900,720);
+  const restored=decodePose(saved,1800,1440);
+  const target=createManualPose(rig,{cx:1,cy:1});applyPose(target,restored);
+  assert.equal(target.facing,-1);assert.equal(target.rootX,900);
+  delete saved.facing;assert.equal(decodePose(saved,900,720).facing,1);
+});
+
+test('body rod displacement drives legs without altering hand pose or requiring autoplay', async () => {
+  const {moveBodyRod}=await import('../src/rodMotion.js');
+  const profile={...rig,profile:true},base=createManualPose(profile,{cx:450,cy:310,scale:.62});
+  const initial=moveBodyRod(profile,base,0,0);
+  assert.deepEqual(initial.localRot,base.localRot);
+  const moved=moveBodyRod(profile,base,24,-20);
+  assert.equal(moved.rootX,474);assert.equal(moved.rootY,290);
+  assert.notEqual(moved.localRot.get('thighL'),base.localRot.get('thighL'));
+  assert.equal(moved.localRot.get('lowerArmR'),base.localRot.get('lowerArmR'));
+  assert.deepEqual(moveBodyRod(profile,base,24,-20),moved);
+  assert.deepEqual(moveBodyRod(profile,base,0,0),initial);
+});

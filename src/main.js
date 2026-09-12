@@ -136,7 +136,7 @@ function fillPartList(rig) {
 function updateMissionUI() {
   document.getElementById('btnDownload').disabled = savedPoses.some(p => !p);
   const m = MISSIONS[missionIndex];
-  taskMain.textContent = ['用下方的棍，幫悟空擺出準備出發的動作。','遇到危險了，悟空會怎樣縮身或舉手？','站穩、舉棒，準備迎戰！'][missionIndex];
+  taskMain.textContent = ['慢慢拖身棍，帶悟空出發；提一提，試吓腳步變化。','撥動轉棍換方向，再用手棍演出遇險。','提起持棒手棍，向前推或畫弧，試吓揮棒。'][missionIndex];
   const tipEl = document.getElementById('artTip');
   if (tipEl) tipEl.textContent = m.tip;
   for (const card of missionCardsEl.querySelectorAll('.mission-card')) {
@@ -181,10 +181,8 @@ function renderManual() {
     clear: true,
   });
 
-  if (rodControls && rodControls.getMode() === 'rods') {
-    if (playbackStep < 0) rodControls.drawRods(ctx);
-    rodControls.syncGripPositions();
-  }
+  rodControls?.setVisible(mode === 'manual' && playbackStep < 0);
+  rodControls?.syncGripPositions();
 
   if (playbackStep < 0 && showJointHandles()) {
     const hintId =
@@ -242,6 +240,8 @@ function setControlMode(next) {
 }
 
 function setMode(next) {
+  rodControls?.cancelDrags();
+  rodControls?.setVisible(next === 'manual');
   mode = next;
   const isBody = mode === 'body';
   modeManual.checked = !isBody;
@@ -608,6 +608,7 @@ function markInteracted() {
 }
 
 function resetStanding() {
+  rodControls?.cancelDrags();
   if (!state) return;
   dirtyPose = true;
   updateMissionUI();
@@ -629,6 +630,7 @@ function resetStanding() {
 }
 
 function applyMissionPreset(i) {
+  rodControls?.cancelDrags();
   if (!state || !manualPose) return;
   if (mode !== 'manual') setMode('manual');
   const ok = applyPreset(manualPose, state.rig, layoutCenter(), i);
@@ -649,6 +651,7 @@ function applyMissionPreset(i) {
 }
 
 async function saveCurrentPose() {
+  rodControls?.cancelDrags();
   if (!manualPose || btnSave.disabled) return false;
   if (mode === 'body') {
     setStatus(
@@ -678,6 +681,7 @@ async function goNextMission() {
   else setStatus('三格已完成，可以展示或下載三格圖。');
 }
 function selectMission(i) {
+  rodControls?.cancelDrags();
   if (dirtyPose) {
     savedPoses[missionIndex] = clonePose(manualPose);
     persistStory();
@@ -757,6 +761,7 @@ function stopPlayback() {
 }
 
 async function runPlayback() {
+  rodControls?.cancelDrags();
   if(dirtyPose)await saveCurrentPose();
   if(projectSaveFailed)return;
   const ready = savedPoses.filter(Boolean);
@@ -774,6 +779,7 @@ async function runPlayback() {
   const show = () => {
     if (playbackStep < 0 || playbackStep >= sequence.length) {
       stopPlayback();
+      renderManual();
       setStatus('\u9010\u683c\u5c55\u793a\u5b8c\u6210');
       return;
     }

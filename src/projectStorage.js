@@ -120,6 +120,7 @@ export async function restoreArchive(archive) {
 // Normalized coordinates preserve framing independently of display size.
 export function encodePose(p, w, h) {
   return {
+    facing: p.facing === -1 ? -1 : 1,
     x: p.rootX / w,
     y: p.rootY / h,
     scale: p.scale / Math.min(w, h),
@@ -128,6 +129,7 @@ export function encodePose(p, w, h) {
 }
 export function decodePose(p, w, h) {
   return {
+    facing: p.facing === -1 ? -1 : 1,
     rootX: p.x * w,
     rootY: p.y * h,
     scale: p.scale * Math.min(w, h),
