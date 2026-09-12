@@ -99,8 +99,15 @@ export function buildPresetPose(rig, layout, preset) {
   const pose = createManualPose(rig, layout);
   pose.rootX = layout.cx + (preset.rootOffset?.x || 0);
   pose.rootY = layout.cy + (preset.rootOffset?.y || 0);
-  for (const [id, rot] of Object.entries(preset.localRot)) {
-    pose.localRot.set(id, rot);
+  if (rig.profile) {
+    const offsets = [
+      {torso:.03,upperArmL:-.12,lowerArmL:-.15,upperArmR:-.15,lowerArmR:.1,thighL:.18,thighR:-.16,shinL:.1},
+      {torso:-.13,head:-.08,upperArmL:1.35,lowerArmL:.55,upperArmR:-.85,lowerArmR:-.35,thighL:.18,shinL:.35,thighR:-.14,shinR:-.25},
+      {torso:.05,upperArmL:.35,lowerArmL:.5,upperArmR:-1.1,lowerArmR:.45,thighL:.2,thighR:-.18,shinL:.08,shinR:-.08},
+    ][preset.missionIndex];
+    for (const [id, delta] of Object.entries(offsets)) pose.localRot.set(id,(pose.localRot.get(id)||0)+delta);
+  } else {
+    for (const [id, rot] of Object.entries(preset.localRot)) pose.localRot.set(id, rot);
   }
   return pose;
 }

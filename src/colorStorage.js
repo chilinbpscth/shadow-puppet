@@ -5,11 +5,11 @@
  */
 
 const DB_NAME = 'shadow-puppet';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE = 'coloredParts';
 
 /** @returns {Promise<IDBDatabase>} */
-function openDb() {
+export function openDb() {
   return new Promise((resolve, reject) => {
     if (!('indexedDB' in window)) {
       reject(new Error('此瀏覽器不支援 IndexedDB'));
@@ -20,6 +20,7 @@ function openDb() {
     req.onsuccess = () => resolve(req.result);
     req.onupgradeneeded = () => {
       const db = req.result;
+      if (!db.objectStoreNames.contains('projects')) db.createObjectStore('projects', {keyPath:'id'});
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: ['characterId', 'partId'] });
       }
@@ -42,11 +43,19 @@ export async function saveColoredPart(characterId, partId, pngBlob) {
     updatedAt: Date.now(),
   };
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, 'readwrite');
-    tx.oncomplete = () => resolve();
+    const tx = db.transaction([STORE, 'projects'], 'readwrite');
+    tx.oncomplete = () => { db.close(); resolve(); };
     tx.onerror = () => reject(tx.error || new Error('儲存填色失敗'));
     tx.onabort = () => reject(tx.error || new Error('儲存填色已中止'));
     tx.objectStore(STORE).put(record);
+    const projects = tx.objectStore('projects');
+    const req = projects.get('current');
+    req.onsuccess = () => {
+      const project = req.result || {id:'current',schemaVersion:1,assetVersion:characterId==='wukong-v2'?'wukong-profile-v2':'wukong-legacy-v1',characterId,title:'我的西遊記',poses:[null,null,null],coloredPartIds:[]};
+      project.coloredPartIds = [...new Set([...project.coloredPartIds, partId])];
+      project.updatedAt = Date.now();
+      projects.put(project);
+    };
   });
 }
 
@@ -59,6 +68,7 @@ export async function loadColoredPart(characterId, partId) {
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readonly');
+    tx.oncomplete = () => db.close();
     const req = tx.objectStore(STORE).get([characterId, partId]);
     req.onsuccess = () => {
       const row = req.result;
@@ -78,7 +88,7 @@ export async function loadAllColoredParts(characterId, partIds) {
   return new Promise((resolve, reject) => {
     const out = new Map();
     const tx = db.transaction(STORE, 'readonly');
-    tx.oncomplete = () => resolve(out);
+    tx.oncomplete = () => { db.close(); resolve(out); };
     tx.onerror = () => reject(tx.error || new Error('讀取填色失敗'));
     const store = tx.objectStore(STORE);
     for (const partId of partIds) {

@@ -1,126 +1,40 @@
-# 皮影戲・西遊記 — 整體指引
+# 皮影戲・西遊記：完整悟空三格故事
 
-最後更新：2026-09-12（香港時間）  
-對象：視藝科老師／IT／校本維護  
-標籤：教學試作／校本自維
+2026-09-12 更新。沿用原 repo 與 GitHub Pages；按用家指示發布本輪試玩版。
 
----
+## 學生玩法
 
-## 1. 一句概念
+1. [首頁](https://chilinbpscth.github.io/shadow-puppet/) 選「開始創作」或「繼續作品」。
+2. [畫悟空](https://chilinbpscth.github.io/shadow-puppet/color.html)：直接喺完整側身悟空上填色、畫花紋，旁邊有彩色參考；不用逐件揀部位或組裝。不用填滿才演。
+3. 用填色處理大面積，再用畫筆加幾筆花紋。橡皮恢復原白底、保留輪廓；本次開頁期間最多 20 步復原，身段外空劃不佔步數。5–10 分鐘只是入門設計目標，未經學生計時。
+4. 每筆完成自動保存。「讓悟空上幕」會等待保存完成；失敗保留畫面，按「重試儲存」。
+5. [舞台](https://chilinbpscth.github.io/shadow-puppet/stage.html)：同一隻帶色悟空上幕，拖下方三支棍擺姿勢。關節微調可拖手腕、腳踝；金箍棒跟右手。
+6. 編排「出發 → 遇險 → 迎戰」。可套用姿勢再修改；「保存這一格」保存當前格，「下一步」先保存再轉格。已存格可返回修改。
+7. 三格完成後按「三格展示」，每格約兩秒；「下載三格圖」輸出橫排 PNG，包含作品名稱和各格標題，不含控制棍、工具或教師資訊。
 
-學生**親手畫好**西遊皮影身段（孫悟空），合成角色後，用**虛擬棍**（同可選身體鏡頭）演一小段戲——唔係淨睇示範剪影跟鏡頭。
+## 作品保存
 
-參賽學習線：**手作／數碼創作 → 操偶體驗 → 評賞（藝言堂）**。
+不用登入、沒有新增伺服器。作品只存在該瀏覽器；清網站資料會刪除作品。PNG 是展示圖，不能匯入繼續編輯。
 
----
+保留 IndexedDB `shadow-puppet/coloredParts`，升級 DB 至 v2，新增 `projects`。作品 schemaVersion 1；新版 characterId `wukong-v2`、assetVersion `wukong-profile-v2`，整張填畫存在 `whole`；三格姿勢使用相對舞台座標。圖片及 metadata 在同一 transaction 寫入。
 
-## 2. 學習定位
+舊作品仍使用 `wukong-legacy-v1` 及原有素材，經 `legacy-color.html` 繼續編輯。開始新版前提供旧影偶 PNG 下載，再封存舊作品及顏色；首頁可還原最新封存，還原前也先封存當前作品。舊筆跡不會套入新輪廓。
 
-| 項目 | 內容 |
-|------|------|
-| 年級 | 小五／六視藝 |
-| 文化點 | 皮影戲・西遊記（v1：孫悟空） |
-| 學生要識 | 身段／關節、填色創作、摆姿勢表達、簡單操偶 |
-| 裝置 | iPad Safari／電腦；**HTTPS**；**唔使登入** |
-| 唔做（而家） | 自由畫空框版、多角色、雲端帳號、8th Wall、教師後台 |
+## 本輪驗證與限制
 
----
+已實玩完整填畫、空劃不吃復原、橡皮、保存後上幕、右手與棒連動、三格保存重載、下載 PNG。瀏覽器 768×1024、1024×768 尺寸已檢查；這不是實體 iPad Safari 通過。仍需老師及 2–3 位學生課堂試玩，確認操作、三格表意、入門填畫時間與重開作品。
 
-## 3. 建議課堂流程
+新版側身造型暫時只用棍控／關節微調，身體驅動按鈕停用並標示原因；舊造型相機功能保留。相機／實體 iPad 未驗收。沒有連續錄影、多角色、登入或藝言堂直接上載。
 
-1. **填色／繪畫**  
-   打開填色頁 → 逐節用**畫筆**畫（似變臉）或點擊填色 → 可橡皮／復原 → **儲存**。  
-   ※ 唔使填晒所有身段；冇填嘅用示範剪影，填過嘅先見你嘅色。
+## 維護及部署
 
-2. **進入演出**  
-   舞台載入已存填色 → 見到自己嘅孫悟空。
-
-3. **操偶演一段**  
-   - 預設**棍控**：拖下方三支棍（軀幹／左手／右手）  
-   - 或**關節微調**：拖黃色圓點  
-   - 任務卡：出發 → 遇險 → 迎戰（可「套用姿勢」、保存、逐格展示）
-
-4. **加成（可選）**  
-   「身體驅動」：開鏡頭用 Pose 跟身體（失敗可返手動，唔丟作品）。
-
-5. **評賞（跨工具）**  
-   作品／過程可交藝言堂做互評（另 app）。
-
----
-
-## 4. 正式連結
-
-| 用途 | 網址 |
-|------|------|
-| **演出／操偶舞台** | https://chilinbpscth.github.io/shadow-puppet/ |
-| **填色／繪畫** | https://chilinbpscth.github.io/shadow-puppet/color.html |
-| **原始碼 Repo** | https://github.com/chilinbpscth/shadow-puppet |
-| GitHub Pages 來源 | 分支 `gh-pages`（由 `npm run build` 的 `dist/` 部署） |
-
-而家 `main` 參考 commit：`90b5a6f`（畫筆＋空劃 undo 修復）。
-
----
-
-## 5. 本機開發（維護用）
-
-```bash
-git clone https://github.com/chilinbpscth/shadow-puppet.git
-cd shadow-puppet
-npm i
-npm run dev          # 預設 http://localhost:5173/
-# 填色：http://localhost:5173/color.html
-npm run build        # 產出 dist/（含 index.html + color.html）
+```sh
+npm ci
+npm test
+npm run dev
+npm run build
 ```
 
-部署 Pages：將 `dist/` 內容推上 `gh-pages` 分支（現有做法）。
+`dist/` 部署至原 `gh-pages`；原始碼 [repo](https://github.com/chilinbpscth/shadow-puppet)。首頁 `index.html`，繪畫 `color.html`，舞台 `stage.html`，舊作品 `legacy-color.html`。本機預覽與正式站資料不互通。
 
-技術摘要：Vite + vanilla JS + Canvas2D；MediaPipe Pose lite（懶載入）；填色存 **IndexedDB**（`shadow-puppet`／`coloredParts`，只喺該瀏覽器本機）。
-
----
-
-## 6. 設計文件（校本）
-
-放喺 `/workspace/ceate-arts/皮影戲/`（或學校對應資料夾）：
-
-| 檔案 | 內容 |
-|------|------|
-| `DESIGN.md` | 身段清單、Pose 綁點、階段 |
-| `REDESIGN-REVIEW-2026-09-10.md` | 原方針 vs 現況差距、A 階段重設計 |
-| `NEXT-CUT-2026-09-11.md` | 預設姿勢／棍控／填色說明 |
-| `COLOR-B-SPEC.md` | 填色規格 |
-| `DRAW-LIKE-BIANLIAN.md` | 對齊變臉畫筆 |
-| `皮影戲指引.md` | **本指引（給人睇嘅總入口）** |
-| 總指南 | `/workspace/ceate-arts/總指南.md`（年級產品地圖） |
-
-姊妹 app：剪紙 AR、變臉 AR、藝言堂（見總指南）。
-
----
-
-## 7. 產品演變（方便對齊期望）
-
-| 階段 | 重點 |
-|------|------|
-| 原文件 v1 | 填色 → 合成 → **相機跟姿為主** |
-| 用家糾正後 | **填色／畫筆最緊要**；棍控演戲；相機係加成；要睇得出「出發」等姿勢 |
-| 而家已上線 | 變臉式畫筆填色、舞台見色、棍控＋任務姿勢、Pose 加成 |
-
----
-
-## 8. 課堂小貼士
-
-- iPad 請用上方正式 HTTPS 連結；第一次開鏡頭要允許權限。  
-- 填色資料喺**該部 iPad／瀏覽器**本機；清網站資料會冇咗填色。  
-- 硬 refresh（強制重新載入）可避免舊 cache。  
-- 教師 debug／骨架線收喺舞台「教師區」。
-
----
-
-## 9. 聯絡角色（校本 bot／負責人）
-
-- **皮影戲** bot：維護本 app／Pages  
-- **Codex CLI**：代碼審核  
-- **視藝巡查／視藝參賽管理員**：參賽路線同總指南  
-
----
-
-*本指引反映 2026-09-12 前傾過嘅概念同現況連結；大改玩法或對外發佈政策以用家確認為準。*
+舊 main 基準 `1223ac198211abc8b6c8d10531256ca378768db1`，舊 gh-pages 基準 `62c618d2a1269a1bfd8fc828c94b9a701f401985`；另保留 `before-whole-figure-source`、`before-whole-figure-pages` 標籤。回退舊程式時，先將原 `src/colorStorage.js` 的 DB_VERSION 改成 2 再 build，不能直接開已升級資料庫或刪 DB；亦可用現版 `legacy-color.html` 處理舊作品。

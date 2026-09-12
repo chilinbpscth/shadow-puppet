@@ -94,17 +94,7 @@ export function drawPuppet(ctx, rig, images, opts = {}) {
   if (clear) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const g = ctx.createRadialGradient(
-      layout.cx,
-      layout.cy,
-      40,
-      layout.cx,
-      layout.cy + 80,
-      Math.max(canvas.width, canvas.height) * 0.55,
-    );
-    g.addColorStop(0, 'rgba(90, 55, 30, 0.35)');
-    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = g;
+    ctx.fillStyle = '#FBF8F2';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
