@@ -65,6 +65,9 @@ let drawing = false;
 /** @type {{x:number,y:number}|null} */
 let lastPt = null;
 let strokeTouched = 0;
+/** @type {ImageData | null} */
+let strokePrevUndo = null;
+let strokeWasDirty = false;
 
 /**
  * Per-part working state (keeps unsaved edits across switches).
@@ -261,9 +264,11 @@ function paintStrokeTo(pt) {
   );
   strokeTouched += n;
   lastPt = pt;
-  sess.dirty = true;
-  paintSession(sess);
-  updatePickerUI();
+  if (n > 0) {
+    sess.dirty = true;
+    paintSession(sess);
+    updatePickerUI();
+  }
 }
 
 function onPointerDown(ev) {
@@ -287,6 +292,8 @@ function onPointerDown(ev) {
   const sess = part && sessions.get(part.id);
   if (!sess) return;
 
+  strokePrevUndo = sess.undoData;
+  strokeWasDirty = sess.dirty;
   sess.undoData = cloneImageData(sess.imageData);
   drawing = true;
   lastPt = null;
@@ -307,6 +314,16 @@ function onPointerUp() {
   drawing = false;
   lastPt = null;
   const part = currentPart();
+  const sess = part && sessions.get(part.id);
+  if (sess && strokeTouched <= 0) {
+    // Empty stroke outside silhouette: restore pixels, don't burn undo / dirty
+    if (sess.undoData) {
+      sess.imageData = sess.undoData;
+      sess.undoData = strokePrevUndo;
+    }
+    sess.dirty = strokeWasDirty;
+    paintSession(sess);
+  }
   if (part) {
     const label = tool === 'eraser' ? '已擦除' : '已繪畫';
     setStatus(
@@ -317,6 +334,8 @@ function onPointerUp() {
     );
   }
   strokeTouched = 0;
+  strokePrevUndo = null;
+  strokeWasDirty = false;
   updatePickerUI();
 }
 
