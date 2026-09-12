@@ -123,6 +123,7 @@ export function applyPreset(target, rig, layout, key) {
   const preset = getPreset(key);
   if (!preset) return false;
   const built = buildPresetPose(rig, layout, preset);
+  built.facing = target.facing === -1 ? -1 : 1;
   applyPose(target, built);
   return true;
 }

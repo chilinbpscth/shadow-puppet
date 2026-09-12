@@ -22,6 +22,7 @@ export function createManualPose(rig, layout) {
     localRot.set(part.id, dp.rotation || 0);
   }
   return {
+    facing: 1,
     rootX: layout.cx,
     rootY: layout.cy,
     scale,
@@ -34,6 +35,7 @@ export function createManualPose(rig, layout) {
  */
 export function clonePose(pose) {
   return {
+    facing: pose.facing === -1 ? -1 : 1,
     rootX: pose.rootX,
     rootY: pose.rootY,
     scale: pose.scale,
@@ -45,6 +47,7 @@ export function clonePose(pose) {
  * Restore into an existing pose object.
  */
 export function applyPose(target, saved) {
+  target.facing = saved.facing === -1 ? -1 : 1;
   target.rootX = saved.rootX;
   target.rootY = saved.rootY;
   target.scale = saved.scale;
@@ -101,6 +104,13 @@ export function resolveManualJoints(rig, pose) {
     const tip = distalTip(hand, scale);
     Object.assign(staff, tip, { rotation: hand.rotation + (localRot.get('staff') || 0) });
   }
+  if (pose.facing === -1) {
+    for (const node of solved.values()) {
+      node.x = 2 * rootX - node.x;
+      node.rotation = -node.rotation;
+      node.flipX = -1;
+    }
+  }
   return solved;
 }
 
@@ -113,7 +123,7 @@ export function distalTip(node, scale) {
   const h = (part.height || 0) * scale;
   const px = (part.pivot?.x ?? 0.5) * w;
   const py = (part.pivot?.y ?? 0.5) * h;
-  const localDx = w * (part.tip?.x ?? .5) - px;
+  const localDx = (w * (part.tip?.x ?? .5) - px) * (node.flipX || 1);
   const localDy = h * (part.tip?.y ?? 1) - py;
   const cos = Math.cos(node.rotation);
   const sin = Math.sin(node.rotation);
@@ -204,7 +214,12 @@ export function applyDrag(rig, pose, handle, x, y, dragMeta = {}) {
   }
 
   if ((handle.kind === 'wrist' || handle.kind === 'ankle') && handle.chain) {
-    twoBoneIk(rig, pose, handle.chain[0], handle.chain[1], x, y);
+    if (pose.facing === -1) {
+      const unmirrored = clonePose(pose);
+      unmirrored.facing = 1;
+      twoBoneIk(rig, unmirrored, handle.chain[0], handle.chain[1], 2 * pose.rootX - x, y);
+      pose.localRot = unmirrored.localRot;
+    } else twoBoneIk(rig, pose, handle.chain[0], handle.chain[1], x, y);
   }
 }
 
@@ -293,12 +308,12 @@ export { HANDLE_HIT_PX };
 export function constrainPose(rig, pose, width, height) {
   const joints = resolveManualJoints(rig, pose);
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const {x, y, rotation, part} of joints.values()) {
+  for (const {x, y, rotation, part, flipX = 1} of joints.values()) {
     const w = part.width * pose.scale, h = part.height * pose.scale;
     const px = (part.pivot?.x ?? .5) * w, py = (part.pivot?.y ?? .5) * h;
     for (const [dx, dy] of [[-px,-py],[w-px,-py],[-px,h-py],[w-px,h-py]]) {
-      const a=x+dx*Math.cos(rotation)-dy*Math.sin(rotation);
-      const b=y+dx*Math.sin(rotation)+dy*Math.cos(rotation);
+      const a=x+dx*flipX*Math.cos(rotation)-dy*Math.sin(rotation);
+      const b=y+dx*flipX*Math.sin(rotation)+dy*Math.cos(rotation);
       minX=Math.min(minX,a);maxX=Math.max(maxX,a);minY=Math.min(minY,b);maxY=Math.max(maxY,b);
     }
   }

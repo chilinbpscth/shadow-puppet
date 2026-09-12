@@ -85,7 +85,7 @@ export function drawPuppet(ctx, rig, images, opts = {}) {
     for (const part of rig.parts) {
       const j = opts.joints.get(part.id);
       if (!j) continue;
-      pose.set(part.id, { x: j.x, y: j.y, rotation: j.rotation, part });
+      pose.set(part.id, { x: j.x, y: j.y, rotation: j.rotation, flipX: j.flipX || 1, part });
     }
   } else {
     pose = resolvePose(rig, layout);
@@ -124,6 +124,7 @@ function drawPart(ctx, node, img, scale) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(rotation);
+  ctx.scale(node.flipX || 1, 1);
   ctx.drawImage(img, -px, -py, w, h);
   ctx.restore();
 }
