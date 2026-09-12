@@ -1,0 +1,322 @@
+{
+  "id": "wukong",
+  "labelZh": "孫悟空",
+  "notes": {
+    "derived": {
+      "shoulderMid": "mid(11,12)",
+      "hipMid": "mid(23,24)"
+    },
+    "poseRules": [
+      "two-point align: pos=fromLandmark, angle=atan2(to-from); do NOT stretch length",
+      "global scale from shoulder–hip distance, clamp 0.7–1.4",
+      "visibility < 0.5 → hold previous frame",
+      "EMA: smooth landmark points first, then compute angles",
+      "use image landmarks (not world landmarks)"
+    ],
+    "overlap": "proximal ends leave ~12–20% tenon/disk for joint overlap"
+  },
+  "parts": [
+    {
+      "id": "torso",
+      "labelZh": "軀幹",
+      "src": "parts/torso.png",
+      "width": 180,
+      "height": 240,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.92
+      },
+      "drawOrder": 40,
+      "overlapNote": "near ends ~12–20% tenon/disk (shoulder top + hip bottom)",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": "hipMid",
+        "toLandmark": "shoulderMid",
+        "notes": "torso: hipMid → shoulderMid; pivot at hip (proximal, bottom of image)"
+      },
+      "defaultPose": {
+        "x": 0,
+        "y": 0,
+        "rotation": 0,
+        "parent": null
+      }
+    },
+    {
+      "id": "head",
+      "labelZh": "頭＋金箍",
+      "src": "parts/head.png",
+      "width": 160,
+      "height": 160,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "drawOrder": 60,
+      "overlapNote": "near neck end ~12–20% disk overlaps torso shoulder",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": "shoulderMid",
+        "toLandmark": 0,
+        "toLandmarkName": "NOSE",
+        "notes": "head: shoulderMid → 0 (NOSE); pivot at neck (bottom of head image)"
+      },
+      "defaultPose": {
+        "x": 0,
+        "y": -210,
+        "rotation": 0,
+        "parent": "torso"
+      }
+    },
+    {
+      "id": "upperArmL",
+      "labelZh": "左上臂",
+      "src": "parts/upperArmL.png",
+      "width": 60,
+      "height": 140,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.12
+      },
+      "drawOrder": 30,
+      "overlapNote": "near shoulder end ~12–20% disk",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": 11,
+        "toLandmark": 13,
+        "notes": "L upper arm: 11 (L_SHOULDER) → 13 (L_ELBOW)"
+      },
+      "defaultPose": {
+        "x": -70,
+        "y": -175,
+        "rotation": 1.45,
+        "parent": "torso"
+      }
+    },
+    {
+      "id": "upperArmR",
+      "labelZh": "右上臂",
+      "src": "parts/upperArmR.png",
+      "width": 60,
+      "height": 140,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.12
+      },
+      "drawOrder": 30,
+      "overlapNote": "near shoulder end ~12–20% disk",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": 12,
+        "toLandmark": 14,
+        "notes": "R upper arm: 12 (R_SHOULDER) → 14 (R_ELBOW)"
+      },
+      "defaultPose": {
+        "x": 70,
+        "y": -175,
+        "rotation": -1.45,
+        "parent": "torso"
+      }
+    },
+    {
+      "id": "lowerArmL",
+      "labelZh": "左下臂",
+      "src": "parts/lowerArmL.png",
+      "width": 50,
+      "height": 130,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.1
+      },
+      "drawOrder": 20,
+      "overlapNote": "near elbow end ~12–20% disk; palm drawn at distal tip",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": 13,
+        "toLandmark": 15,
+        "notes": "L lower arm: 13 (L_ELBOW) → 15 (L_WRIST); palm at end, no separate hand"
+      },
+      "defaultPose": {
+        "x": 0,
+        "y": 120,
+        "rotation": 0.2,
+        "parent": "upperArmL"
+      }
+    },
+    {
+      "id": "lowerArmR",
+      "labelZh": "右下臂",
+      "src": "parts/lowerArmR.png",
+      "width": 50,
+      "height": 130,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.1
+      },
+      "drawOrder": 20,
+      "overlapNote": "near elbow end ~12–20% disk; palm drawn at distal tip",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": 14,
+        "toLandmark": 16,
+        "notes": "R lower arm: 14 (R_ELBOW) → 16 (R_WRIST); palm at end, no separate hand"
+      },
+      "defaultPose": {
+        "x": 0,
+        "y": 120,
+        "rotation": -0.2,
+        "parent": "upperArmR"
+      }
+    },
+    {
+      "id": "thighL",
+      "labelZh": "左大腿",
+      "src": "parts/thighL.png",
+      "width": 70,
+      "height": 160,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.12
+      },
+      "drawOrder": 25,
+      "overlapNote": "near hip end ~12–20% disk",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": 23,
+        "toLandmark": 25,
+        "notes": "L thigh: 23 (L_HIP) → 25 (L_KNEE)"
+      },
+      "defaultPose": {
+        "x": -28,
+        "y": 8,
+        "rotation": 0.08,
+        "parent": "torso"
+      }
+    },
+    {
+      "id": "thighR",
+      "labelZh": "右大腿",
+      "src": "parts/thighR.png",
+      "width": 70,
+      "height": 160,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.12
+      },
+      "drawOrder": 25,
+      "overlapNote": "near hip end ~12–20% disk",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": 24,
+        "toLandmark": 26,
+        "notes": "R thigh: 24 (R_HIP) → 26 (R_KNEE)"
+      },
+      "defaultPose": {
+        "x": 28,
+        "y": 8,
+        "rotation": -0.08,
+        "parent": "torso"
+      }
+    },
+    {
+      "id": "shinL",
+      "labelZh": "左小腿",
+      "src": "parts/shinL.png",
+      "width": 60,
+      "height": 150,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.1
+      },
+      "drawOrder": 15,
+      "overlapNote": "near knee end ~12–20% disk; shoe drawn at distal tip",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": 25,
+        "toLandmark": 27,
+        "notes": "L shin: 25 (L_KNEE) → 27 (L_ANKLE); shoe at end, no separate foot"
+      },
+      "defaultPose": {
+        "x": 0,
+        "y": 138,
+        "rotation": 0.05,
+        "parent": "thighL"
+      }
+    },
+    {
+      "id": "shinR",
+      "labelZh": "右小腿",
+      "src": "parts/shinR.png",
+      "width": 60,
+      "height": 150,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.1
+      },
+      "drawOrder": 15,
+      "overlapNote": "near knee end ~12–20% disk; shoe drawn at distal tip",
+      "poseFollow": true,
+      "binding": {
+        "fromLandmark": 26,
+        "toLandmark": 28,
+        "notes": "R shin: 26 (R_KNEE) → 28 (R_ANKLE); shoe at end, no separate foot"
+      },
+      "defaultPose": {
+        "x": 0,
+        "y": 138,
+        "rotation": -0.05,
+        "parent": "thighR"
+      }
+    },
+    {
+      "id": "tail",
+      "labelZh": "尾巴",
+      "src": "parts/tail.png",
+      "width": 80,
+      "height": 200,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.08
+      },
+      "drawOrder": 10,
+      "overlapNote": "near hip attach ~12–20% disk",
+      "poseFollow": false,
+      "binding": {
+        "fromLandmark": null,
+        "toLandmark": null,
+        "notes": "tail: hung at hip; poseFollow false — no pose binding"
+      },
+      "defaultPose": {
+        "x": 40,
+        "y": -10,
+        "rotation": 0.55,
+        "parent": "torso"
+      }
+    },
+    {
+      "id": "staff",
+      "labelZh": "金箍棒",
+      "src": "parts/staff.png",
+      "width": 40,
+      "height": 280,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.55
+      },
+      "drawOrder": 70,
+      "overlapNote": "optional; grip near mid for wrist hold",
+      "poseFollow": true,
+      "optional": true,
+      "binding": {
+        "fromLandmark": 16,
+        "toLandmark": null,
+        "notes": "staff: follow landmark 16 (R_WRIST) later in P4; position at wrist, angle free or along forearm"
+      },
+      "defaultPose": {
+        "x": 260,
+        "y": -160,
+        "rotation": 0.2,
+        "parent": "torso"
+      }
+    }
+  ]
+}

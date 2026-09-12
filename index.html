@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>皮影戲・西遊記 — 教學試作</title>
+    <script type="module" crossorigin src="./assets/main-1hbSP4GP.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/loadRig-ocx-PTHf.js">
+    <link rel="stylesheet" crossorigin href="./assets/loadRig-SFRO2pGs.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1 id="appTitle">皮影戲・西遊記</h1>
+        <p class="badge" id="appBadge">教學試作／校本自維</p>
+      </div>
+      <p class="char-label" id="charLabel">角色：孫悟空（wukong）</p>
+    </header>
+    <div class="task-bar" id="taskBar" role="status">
+      <p class="task-main" id="taskMain">拖動手腳的圓點，幫孫悟空擺出「準備出發」的姿勢。</p>
+      <p class="task-steps" id="taskSteps">① 套用姿勢或拖棍／關節　② 可選身體驅動　③ 重設</p>
+      <p class="art-tip" id="artTip">視藝提示：只改手肘和膝頭，怎樣令角色看起來更緊張？</p>
+    </div>
+    <main class="layout">
+      <section class="stage-column">
+        <div class="stage-wrap">
+          <video id="camera" class="camera" playsinline muted autoplay width="640" height="480" aria-hidden="true"></video>
+          <canvas id="stage" width="720" height="900" aria-label="皮影合成畫布"></canvas>
+          <p class="drag-hint" id="dragHint">提示：拖動手腳圓點或下方虛擬棍擺姿勢</p>
+        </div>
+        <div class="demo-notice" id="demoNotice" role="note">
+          <span id="demoNoticeText">正在檢查填色…</span>
+          <div class="notice-actions" id="demoNoticeActions"></div>
+        </div>
+        <div class="rod-toolbar" id="rodToolbar">
+          <div class="control-mode-row" role="radiogroup" aria-label="操偶方式">
+            <label class="check compact"><input type="radio" name="controlMode" id="modeRods" value="rods" checked /> <span>棍控</span></label>
+            <label class="check compact"><input type="radio" name="controlMode" id="modeJoints" value="joints" /> <span>關節微調</span></label>
+          </div>
+          <div id="rodRail" class="rod-rail" aria-label="虛擬棍：軀幹／左手／右手"></div>
+        </div>
+      </section>
+      <aside class="panel">
+        <h2 id="hMissions">任務卡</h2>
+        <div class="mission-cards" id="missionCards" role="list">
+          <div class="mission-card active" data-mission="0" role="listitem">
+            <button type="button" class="mission-select" data-mission="0" aria-pressed="true">
+              <span class="mission-num">1</span>
+              <span class="mission-title">出發</span>
+              <span class="mission-story">悟空收拾行裝，準備西行。</span>
+              <span class="mission-save" data-saved="0">未保存</span>
+            </button>
+            <div class="mission-thumb sil-depart" aria-hidden="true" title="出發姿勢剪影">
+              <span class="sil-figure"></span>
+            </div>
+            <button type="button" class="btn-apply-pose" data-apply="0">套用姿勢</button>
+          </div>
+          <div class="mission-card" data-mission="1" role="listitem">
+            <button type="button" class="mission-select" data-mission="1" aria-pressed="false">
+              <span class="mission-num">2</span>
+              <span class="mission-title">遇險</span>
+              <span class="mission-story">山路遇妖，身形一緊。</span>
+              <span class="mission-save" data-saved="0">未保存</span>
+            </button>
+            <div class="mission-thumb sil-danger" aria-hidden="true" title="遇險姿勢剪影">
+              <span class="sil-figure"></span>
+            </div>
+            <button type="button" class="btn-apply-pose" data-apply="1">套用姿勢</button>
+          </div>
+          <div class="mission-card" data-mission="2" role="listitem">
+            <button type="button" class="mission-select" data-mission="2" aria-pressed="false">
+              <span class="mission-num">3</span>
+              <span class="mission-title">迎戰</span>
+              <span class="mission-story">舉起金箍棒，迎戰前方！</span>
+              <span class="mission-save" data-saved="0">未保存</span>
+            </button>
+            <div class="mission-thumb sil-battle" aria-hidden="true" title="迎戰姿勢剪影">
+              <span class="sil-figure"></span>
+            </div>
+            <button type="button" class="btn-apply-pose" data-apply="2">套用姿勢</button>
+          </div>
+        </div>
+        <h2 id="hControl">操偶</h2>
+        <div class="mode-row" role="radiogroup" aria-label="mode">
+          <label class="check"><input type="radio" name="mode" id="modeManual" value="manual" checked /> <span id="labManual">手動操縱（預設）</span></label>
+          <label class="check"><input type="radio" name="mode" id="modeBody" value="body" /> <span id="labBody">身體驅動（加成）</span></label>
+        </div>
+        <div class="primary-actions">
+          <button type="button" id="btnSave" class="btn">保存此姿勢</button>
+          <button type="button" id="btnNext" class="btn">下一步</button>
+          <button type="button" id="btnPlayback" class="btn secondary">逐格展示</button>
+          <button type="button" id="btnReset" class="btn secondary">重設站立</button>
+        </div>
+        <div id="bodyControls" hidden>
+          <button type="button" id="btnStartCam" class="btn">試用身體驅動</button>
+          <button type="button" id="btnStopCam" class="btn secondary" disabled>關閉鏡頭</button>
+          <button type="button" id="btnBackManual" class="btn secondary">返回手動操縱</button>
+          <p id="mirrorLabel" class="note">鏡像：開。iPad 請用 HTTPS，並以按鈕觸發相機。失敗可隨時返回手動，已存姿勢不會丟失。</p>
+        </div>
+        <details class="teacher-zone" id="teacherZone">
+          <summary id="teacherSum">教師區（debug／身段）</summary>
+          <label class="check"><input type="checkbox" id="debugToggle" /> <span id="labDebug">顯示支點與骨骼線（debug）</span></label>
+          <button type="button" id="btnRedraw" class="btn secondary">重新繪製</button>
+          <h3 class="subhead" id="hParts">身段清單</h3>
+          <ul id="partList" class="part-list"></ul>
+          <p class="note" id="teacherNote">手動操縱：棍控或拖手腕／腳踝／軀幹圓點。身體驅動：MediaPipe Pose lite（懶載）。</p>
+        </details>
+        <p id="status" class="status" role="status"></p>
+      </aside>
+    </main>
+  </body>
+</html>
