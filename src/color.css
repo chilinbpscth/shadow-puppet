@@ -243,3 +243,32 @@
   color: #ffe8c0;
   border-color: rgba(196, 168, 130, 0.55);
 }
+
+.tool-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.tool-row .tool-btn,
+.tool-row .size-btn {
+  flex: 1 1 auto;
+  min-width: 4.2rem;
+  min-height: 44px;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.95rem;
+  touch-action: manipulation;
+}
+
+.color-tools h2 + .tool-row {
+  margin-top: 0;
+}
+
+.color-tools h2 {
+  margin-top: 0.35rem;
+}
+
+.color-tools h2:first-child {
+  margin-top: 0;
+}

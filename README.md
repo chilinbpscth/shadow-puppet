@@ -27,9 +27,9 @@
 
 ## 填色（P2／B）
 
-1. 開 `color.html` → 預設悟空首個身段，選色後點擊區域填色。
-2. 透明區與黑色輪廓為邊界；復原／重設／儲存。
-3. IndexedDB：`shadow-puppet` / `coloredParts`，鍵 `[characterId, partId]`。
+1. 開 `color.html` → 預設悟空首個身段；工具：畫筆／填色／橡皮（預設畫筆），筆粗細中大。
+2. 筆跡與填色只在不透明身段內；透明區與黑色輪廓為邊界；橡皮還原原色。
+3. 復原／重設／儲存；IndexedDB：`shadow-puppet` / `coloredParts`，鍵 `[characterId, partId]`。
 4. 「進入演出」回舞台；`loadRig` 會用已存 PNG 覆蓋示範剪影，棍控／任務／Pose 不變。
 
 ## 鏡頭跟姿（P4）

@@ -17,8 +17,8 @@
     </header>
 
     <div class="task-bar color-task">
-      <p class="task-main" id="taskMain">選顏色，再點身段上的區域填色。</p>
-      <p class="task-steps">① 選身段　② 選色並點擊填色　③ 儲存　④ 進入演出</p>
+      <p class="task-main" id="taskMain">選畫筆或填色，在身段上著色。</p>
+      <p class="task-steps">① 選身段　② 選工具／色／筆粗　③ 繪畫或填色　④ 儲存　⑤ 進入演出</p>
     </div>
 
     <main class="color-layout">
@@ -31,11 +31,25 @@
         <div class="color-canvas-wrap" id="canvasWrap">
           <canvas id="colorCanvas" width="160" height="160" aria-label="填色畫布"></canvas>
         </div>
-        <p class="color-hint">點擊不透明區域填色；透明區與黑色輪廓不會被填滿。支援觸控。</p>
+        <p class="color-hint" id="colorHint">畫筆／橡皮只在不透明身段內生效；透明區與黑色輪廓為邊界。支援觸控。</p>
         <p id="colorStatus" class="status" role="status"></p>
       </section>
 
       <aside class="color-tools panel">
+        <h2>工具</h2>
+        <div class="tool-row" id="toolRow" role="toolbar" aria-label="繪畫工具">
+          <button type="button" id="btnBrush" class="btn tool-btn" aria-pressed="true">畫筆</button>
+          <button type="button" id="btnFill" class="btn secondary tool-btn" aria-pressed="false">填色</button>
+          <button type="button" id="btnEraser" class="btn secondary tool-btn" aria-pressed="false">橡皮</button>
+        </div>
+
+        <h2>筆粗</h2>
+        <div class="tool-row" id="sizeRow" role="toolbar" aria-label="筆粗">
+          <button type="button" class="btn secondary size-btn" data-size="6" aria-pressed="false">細</button>
+          <button type="button" class="btn size-btn" data-size="14" aria-pressed="true">中</button>
+          <button type="button" class="btn secondary size-btn" data-size="30" aria-pressed="false">大</button>
+        </div>
+
         <h2>色板</h2>
         <div id="palette" class="palette" role="listbox" aria-label="色板"></div>
 
