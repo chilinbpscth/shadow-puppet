@@ -1,3 +1,6 @@
+import {remember} from './undoHistory.js';
+import {drawPuppet} from './drawPuppet.js';
+import {createManualPose,resolveManualJoints} from './dragPose.js';
 /**
  * color.html — brush / fill / eraser for wukong parts (zh-Hant, touch-friendly).
  * Mirrors bianlian-ar paint tools; IndexedDB on Save; stage overlay unchanged.
@@ -66,7 +69,10 @@ let drawing = false;
 let lastPt = null;
 let strokeTouched = 0;
 /** @type {ImageData | null} */
-let strokePrevUndo = null;
+let strokeBefore = null;
+let saveQueue = Promise.resolve();
+let pendingSaves = 0;
+let ready = false;
 let strokeWasDirty = false;
 
 /**
@@ -119,7 +125,8 @@ function ensureSession(part, img) {
   const sess = {
     imageData,
     originalData,
-    undoData: null,
+    history: [],
+    revision: 0,
     lock,
     dirty: false,
     saved: false,
@@ -134,7 +141,19 @@ function paintSession(sess) {
   canvas.width = sess.w;
   canvas.height = sess.h;
   ctx.putImageData(sess.imageData, 0, 0);
-  btnUndo.disabled = !sess.undoData;
+  fitCanvas();
+  btnUndo.disabled = !sess.history.length;
+  drawWholePreview();
+}
+
+function fitCanvas() {
+  const wrap = document.getElementById('canvasWrap');
+  const style = getComputedStyle(wrap);
+  const width = wrap.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  const height = wrap.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+  const scale = Math.max(.01, Math.min(width / canvas.width, height / canvas.height));
+  canvas.style.width = canvas.width * scale + 'px';
+  canvas.style.height = canvas.height * scale + 'px';
 }
 
 function toolHint() {
@@ -189,15 +208,15 @@ function updatePickerUI() {
 
 function selectPart(index) {
   if (!state) return;
-  drawing = false;
-  lastPt = null;
+  onPointerUp();
+  if (currentPart()) queueSave(currentPart(), sessions.get(currentPart().id));
   partIndex = Math.max(0, Math.min(partIds.length - 1, index));
   const part = currentPart();
   const baseImg = state.originalImages.get(part.id) || state.images.get(part.id);
   const sess = ensureSession(part, baseImg);
   paintSession(sess);
   updatePickerUI();
-  setStatus(`已選「${part.labelZh || part.id}」`);
+  document.querySelector(".color-parts").open = false;
 }
 
 /**
@@ -235,11 +254,12 @@ function applyFillAt(x, y) {
     setStatus('請點在身段不透明區域內（輪廓／透明無效）', true);
     return;
   }
-  sess.undoData = before;
+  remember(sess.history, before);
+  sess.revision++;
   sess.dirty = true;
   paintSession(sess);
   updatePickerUI();
-  setStatus(`已填 ${filled} 像素 ·「${part.labelZh || part.id}」`);
+  queueSave(part, sess);
 }
 
 function paintStrokeTo(pt) {
@@ -272,6 +292,7 @@ function paintStrokeTo(pt) {
 }
 
 function onPointerDown(ev) {
+  if (!ev.isPrimary || drawing || !ready) return;
   if (ev.pointerType === 'mouse' && ev.button !== 0) return;
   ev.preventDefault();
   const pt = canvasPosFromEvent(ev);
@@ -292,9 +313,8 @@ function onPointerDown(ev) {
   const sess = part && sessions.get(part.id);
   if (!sess) return;
 
-  strokePrevUndo = sess.undoData;
   strokeWasDirty = sess.dirty;
-  sess.undoData = cloneImageData(sess.imageData);
+  strokeBefore = cloneImageData(sess.imageData);
   drawing = true;
   lastPt = null;
   strokeTouched = 0;
@@ -315,27 +335,16 @@ function onPointerUp() {
   lastPt = null;
   const part = currentPart();
   const sess = part && sessions.get(part.id);
-  if (sess && strokeTouched <= 0) {
-    // Empty stroke outside silhouette: restore pixels, don't burn undo / dirty
-    if (sess.undoData) {
-      sess.imageData = sess.undoData;
-      sess.undoData = strokePrevUndo;
-    }
+  if (sess && strokeTouched > 0) {
+    remember(sess.history, strokeBefore);
+    sess.revision++;
+    queueSave(part, sess);
+  } else if (sess) {
     sess.dirty = strokeWasDirty;
-    paintSession(sess);
-  }
-  if (part) {
-    const label = tool === 'eraser' ? '已擦除' : '已繪畫';
-    setStatus(
-      strokeTouched > 0
-        ? `${label} ·「${part.labelZh || part.id}」`
-        : '筆跡在身段外無效（請畫在不透明區域）',
-      strokeTouched <= 0,
-    );
   }
   strokeTouched = 0;
-  strokePrevUndo = null;
-  strokeWasDirty = false;
+  strokeBefore = null;
+  if (sess) paintSession(sess);
   updatePickerUI();
 }
 
@@ -343,61 +352,90 @@ function undo() {
   const part = currentPart();
   if (!part) return;
   const sess = sessions.get(part.id);
-  if (!sess?.undoData) return;
-  sess.imageData = sess.undoData;
-  sess.undoData = null;
+  if (!sess?.history.length) return;
+  sess.imageData = sess.history.pop();
+  sess.revision++;
   sess.dirty = true;
   paintSession(sess);
   updatePickerUI();
-  setStatus('已復原一步');
+  queueSave(part, sess);
 }
 
 async function resetPart() {
   const part = currentPart();
   if (!part || !state) return;
   const baseImg = state.originalImages.get(part.id) || state.images.get(part.id);
-  sessions.delete(part.id);
   const sess = ensureSession(part, baseImg);
-  paintSession(sess);
+  remember(sess.history, cloneImageData(sess.imageData));
+  sess.imageData = cloneImageData(sess.originalData);
+  sess.revision++;
   sess.dirty = true;
-  sess.saved = false;
+  paintSession(sess);
   updatePickerUI();
-  setStatus(`已重設「${part.labelZh || part.id}」為原圖（尚未儲存）`);
+  queueSave(part, sess);
 }
 
-async function saveCurrent(showOk = true) {
-  const part = currentPart();
-  if (!part) return false;
-  const sess = sessions.get(part.id);
-  if (!sess) return false;
-
-  btnSave.disabled = true;
+function queueSave(part, sess) {
+  if (!sess?.dirty) return saveQueue;
+  const revision = sess.revision;
+  const snapshot = cloneImageData(sess.imageData);
+  pendingSaves++;
   setStatus('儲存中…');
-  try {
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = sess.w;
-    exportCanvas.height = sess.h;
-    const ex = exportCanvas.getContext('2d');
-    ex.putImageData(sess.imageData, 0, 0);
-    const blob = await canvasToPngBlob(exportCanvas);
-    await saveColoredPart(characterId, part.id, blob);
-    sess.dirty = false;
-    sess.saved = true;
-    const img = await blobToImage(blob);
-    state.images.set(part.id, img);
-    updatePickerUI();
-    if (showOk) setStatus(`已儲存「${part.labelZh || part.id}」`);
-    return true;
-  } catch (err) {
-    console.error(err);
-    setStatus(
-      '儲存失敗：' + (err?.message || String(err)) + ' — 畫布保留，可重試',
-      true,
-    );
-    return false;
-  } finally {
-    btnSave.disabled = false;
+  saveQueue = saveQueue.then(async () => {
+    try {
+      const off = document.createElement('canvas');
+      off.width = sess.w;
+      off.height = sess.h;
+      off.getContext('2d').putImageData(snapshot, 0, 0);
+      const blob = await canvasToPngBlob(off);
+      await saveColoredPart(characterId, part.id, blob);
+      if (sess.revision === revision) {
+        sess.dirty = false;
+        sess.saved = true;
+      }
+    } catch (err) {
+      sess.dirty = true;
+      setStatus('儲存失敗，畫布已保留。請按「重試儲存」。', true);
+    } finally {
+      pendingSaves--;
+      updatePickerUI();
+      if (!pendingSaves && ![...sessions.values()].some((x) => x.dirty))
+        setStatus('已自動儲存');
+    }
+  });
+  return saveQueue;
+}
+async function saveCurrent() {
+  onPointerUp();
+  for (const part of state.rig.parts) queueSave(part, sessions.get(part.id));
+  await saveQueue;
+  return ![...sessions.values()].some((x) => x.dirty);
+}
+function drawWholePreview() {
+  if (!state) return;
+  const preview = document.getElementById('wholePreview');
+  const images = new Map(state.images);
+  for (const [id, sess] of sessions) {
+    const c = document.createElement('canvas');
+    c.width = sess.w;
+    c.height = sess.h;
+    c.getContext('2d').putImageData(sess.imageData, 0, 0);
+    images.set(id, c);
   }
+  const pose = createManualPose(state.rig, { cx: 150, cy: 138, scale: 0.28 });
+  const joints = resolveManualJoints(state.rig, pose);
+  const c = preview.getContext('2d');
+  drawPuppet(c, state.rig, images, { joints, scale: pose.scale });
+  const selected = joints.get(currentPart()?.id);
+  if (selected) {
+    c.strokeStyle = '#A57B2E';
+    c.lineWidth = 2;
+    c.beginPath();
+    c.arc(selected.x, selected.y, 9, 0, Math.PI * 2);
+    c.stroke();
+  }
+  document.getElementById('previewLabel').textContent =
+    '正在畫：' + (currentPart()?.labelZh || '悟空');
 }
 
 async function goNext() {
@@ -452,6 +490,14 @@ function buildPartPicker() {
 }
 
 function bindUi() {
+  for (const id of ['btnStage','backHome']) document.getElementById(id).addEventListener('click', async ev => {
+    ev.preventDefault();
+    if (await saveCurrent()) location.href = ev.currentTarget?.href || document.getElementById(id).href;
+  });
+  window.addEventListener('beforeunload', ev => {
+    if (pendingSaves || [...sessions.values()].some(x => x.dirty)) {ev.preventDefault();ev.returnValue='';}
+  });
+  new ResizeObserver(fitCanvas).observe(document.getElementById('canvasWrap'));
   canvas.style.touchAction = 'none';
   canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointermove', onPointerMove);
@@ -512,7 +558,7 @@ async function hydrateFromDb() {
       sess.dirty = false;
       state.images.set(part.id, colored);
     } catch (err) {
-      console.warn('載入已存填色略過', part.id, err);
+      throw new Error('無法讀取原有填色，請重新載入後再畫：'+err.message);
     }
   }
 }
@@ -536,7 +582,8 @@ async function init() {
 
     await hydrateFromDb();
     selectPart(0);
-    setStatus('可立即繪畫：預設畫筆，亦可改填色／橡皮');
+    ready = true;
+    setStatus('先畫頭、上衣或金箍棒便可以演；不用填完全部。');
   } catch (err) {
     console.error(err);
     setStatus(err?.message || String(err), true);

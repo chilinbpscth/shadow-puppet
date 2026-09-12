@@ -105,7 +105,7 @@ export function createRodControls(opts) {
   }
 
   function onDown(ev, rod, grip) {
-    if (mode !== 'rods') return;
+    if (mode !== 'rods' || !ev.isPrimary || activeId) return;
     const pose = getPose();
     const rig = getRig();
     if (!pose || !rig) return;

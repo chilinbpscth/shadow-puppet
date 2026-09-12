@@ -94,6 +94,13 @@ export function resolveManualJoints(rig, pose) {
   }
 
   for (const part of rig.parts) solve(part.id);
+  // Staff grip is attached to the distal wrist, independent of old torso metadata.
+  const hand = solved.get('lowerArmR');
+  const staff = solved.get('staff');
+  if (hand && staff) {
+    const tip = distalTip(hand, scale);
+    Object.assign(staff, tip, { rotation: hand.rotation + (localRot.get('staff') || 0) });
+  }
   return solved;
 }
 
@@ -281,3 +288,21 @@ function clamp(v, lo, hi) {
 }
 
 export { HANDLE_HIT_PX };
+
+/** Keep the full puppet, including the held staff, inside the stage. */
+export function constrainPose(rig, pose, width, height) {
+  const joints = resolveManualJoints(rig, pose);
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const {x, y, rotation, part} of joints.values()) {
+    const w = part.width * pose.scale, h = part.height * pose.scale;
+    const px = (part.pivot?.x ?? .5) * w, py = (part.pivot?.y ?? .5) * h;
+    for (const [dx, dy] of [[-px,-py],[w-px,-py],[-px,h-py],[w-px,h-py]]) {
+      const a=x+dx*Math.cos(rotation)-dy*Math.sin(rotation);
+      const b=y+dx*Math.sin(rotation)+dy*Math.cos(rotation);
+      minX=Math.min(minX,a);maxX=Math.max(maxX,a);minY=Math.min(minY,b);maxY=Math.max(maxY,b);
+    }
+  }
+  const margin=24;
+  pose.rootX += minX<margin ? margin-minX : maxX>width-margin ? width-margin-maxX : 0;
+  pose.rootY += minY<margin ? margin-minY : maxY>height-margin ? height-margin-maxY : 0;
+}

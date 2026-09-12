@@ -1,8 +1,11 @@
+import {readProject,updateProject,encodePose,decodePose} from './projectStorage.js';
+import {renderArtwork,downloadCanvas} from './exportArtwork.js';
 import { loadRig } from './loadRig.js';
 import { drawPuppet, drawHandles } from './drawPuppet.js';
 import { bindPoseFromLandmarks } from './bindPose.js';
 import {
   createManualPose,
+  constrainPose,
   clonePose,
   applyPose,
   resolveManualJoints,
@@ -98,6 +101,10 @@ let missionIndex = 0;
 /** @type {(ReturnType<typeof clonePose> | null)[]} */
 const savedPoses = [null, null, null];
 let playbackTimer = 0;
+let projectQueue = Promise.resolve();
+let projectSaveFailed = false;
+let pendingProjectSaves = 0;
+let dirtyPose = false;
 let playbackStep = -1;
 
 function setStatus(msg, isError = false) {
@@ -106,7 +113,7 @@ function setStatus(msg, isError = false) {
 }
 
 function layoutCenter() {
-  return { cx: canvas.width / 2, cy: canvas.height * 0.36, scale: 1 };
+  return { cx: canvas.width / 2, cy: canvas.height * 0.52, scale: .8 };
 }
 
 function fillPartList(rig) {
@@ -127,8 +134,9 @@ function fillPartList(rig) {
 }
 
 function updateMissionUI() {
+  document.getElementById('btnDownload').disabled = savedPoses.some(p => !p);
   const m = MISSIONS[missionIndex];
-  taskMain.textContent = m.task;
+  taskMain.textContent = ['用下方的棍，幫悟空擺出準備出發的動作。','遇到危險了，悟空會怎樣縮身或舉手？','站穩、舉棒，準備迎戰！'][missionIndex];
   const tipEl = document.getElementById('artTip');
   if (tipEl) tipEl.textContent = m.tip;
   for (const card of missionCardsEl.querySelectorAll('.mission-card')) {
@@ -142,7 +150,7 @@ function updateMissionUI() {
     if (saveEl) {
       const ok = !!savedPoses[i];
       saveEl.dataset.saved = ok ? '1' : '0';
-      saveEl.textContent = ok ? '\u5df2\u4fdd\u5b58' : '\u672a\u4fdd\u5b58';
+      saveEl.textContent = i === missionIndex && dirtyPose ? '已修改' : ok ? '已保存' : '未保存';
     }
   }
 }
@@ -161,6 +169,7 @@ function showJointHandles() {
 
 function renderManual() {
   if (!state || !manualPose) return;
+  constrainPose(state.rig, manualPose, canvas.width, canvas.height);
   const joints = jointsForDraw();
   handles = getHandles(state.rig, manualPose, joints);
   drawPuppet(ctx, state.rig, state.images, {
@@ -173,11 +182,11 @@ function renderManual() {
   });
 
   if (rodControls && rodControls.getMode() === 'rods') {
-    rodControls.drawRods(ctx);
+    if (playbackStep < 0) rodControls.drawRods(ctx);
     rodControls.syncGripPositions();
   }
 
-  if (showJointHandles()) {
+  if (playbackStep < 0 && showJointHandles()) {
     const hintId =
       !hasDragged && handles.length
         ? handles.find((h) => h.kind === 'wrist')?.id || handles[0].id
@@ -533,7 +542,8 @@ function canvasPointFromEvent(ev) {
 }
 
 function onPointerDown(ev) {
-  if (mode !== 'manual' || !state || !manualPose) return;
+  if (mode !== 'manual' || !state || !manualPose || !ev.isPrimary || activeHandle) return;
+  stopPlayback();
   // In rod mode, joint dots are hidden — ignore canvas joint hits
   if (rodControls && rodControls.getMode() === 'rods') return;
   const pt = canvasPointFromEvent(ev);
@@ -565,6 +575,8 @@ function onPointerMove(ev) {
   const pt = canvasPointFromEvent(ev);
   if (!pt) return;
   ev.preventDefault();
+  dirtyPose = true;
+  updateMissionUI();
   applyDrag(state.rig, manualPose, activeHandle, pt.x, pt.y, dragMeta);
   const joints = resolveManualJoints(state.rig, manualPose);
   handles = getHandles(state.rig, manualPose, joints);
@@ -585,6 +597,9 @@ function onPointerUp(ev) {
 }
 
 function markInteracted() {
+  stopPlayback();
+  dirtyPose = true;
+  updateMissionUI();
   if (!hasDragged) {
     hasDragged = true;
     dragHintEl?.classList.add('hidden');
@@ -594,6 +609,8 @@ function markInteracted() {
 
 function resetStanding() {
   if (!state) return;
+  dirtyPose = true;
+  updateMissionUI();
   manualPose = createManualPose(state.rig, layoutCenter());
   activeHandle = null;
   hasDragged = false;
@@ -631,42 +648,104 @@ function applyMissionPreset(i) {
   );
 }
 
-function saveCurrentPose() {
-  if (!manualPose) return;
-  if (mode === 'body' && prevJoints?.size) {
+async function saveCurrentPose() {
+  if (!manualPose || btnSave.disabled) return false;
+  if (mode === 'body') {
     setStatus(
       '\u8acb\u5148\u8fd4\u56de\u624b\u52d5\u64cd\u7e31\u518d\u4fdd\u5b58\uff08\u4fdd\u7559\u5df2\u5b58\u69fd\uff09',
       true,
     );
-    return;
+    return false;
   }
+  btnSave.disabled = true;
+  btnNext.disabled = true;
   savedPoses[missionIndex] = clonePose(manualPose);
+  dirtyPose = false;
   updateMissionUI();
+  const saved = await persistStory();
+  btnSave.disabled = false;
+  btnNext.disabled = false;
+  if (!saved) return false;
   setStatus(
     '\u5df2\u4fdd\u5b58\u300c' + MISSIONS[missionIndex].title + '\u300d\u59ff\u52e2',
   );
+  return true;
 }
 
-function goNextMission() {
-  if (missionIndex < MISSIONS.length - 1) {
-    missionIndex += 1;
-    updateMissionUI();
-    setStatus('\u4efb\u52d9\uff1a' + MISSIONS[missionIndex].title + ' \u2014 ' + MISSIONS[missionIndex].story);
-  } else {
-    setStatus(
-      '\u4e09\u500b\u59ff\u52e2\u5df2\u5c31\u7dd2\uff1f\u53ef\u6309\u300c\u9010\u683c\u5c55\u793a\u300d\u6f14\u4e00\u6bb5\u6232',
-    );
-  }
+async function goNextMission() {
+  if (!(await saveCurrentPose())) return;
+  if (missionIndex < 2) selectMission(missionIndex + 1);
+  else setStatus('三格已完成，可以展示或下載三格圖。');
 }
-
 function selectMission(i) {
-  missionIndex = i;
-  updateMissionUI();
-  if (savedPoses[i] && manualPose) {
-    applyPose(manualPose, savedPoses[i]);
-    if (mode === 'manual') renderManual();
+  if (dirtyPose) {
+    savedPoses[missionIndex] = clonePose(manualPose);
+    persistStory();
   }
+  dirtyPose = false;
+  missionIndex = i;
+  if (savedPoses[i]) applyPose(manualPose, savedPoses[i]);
+  else manualPose = createManualPose(state.rig, layoutCenter());
+  updateMissionUI();
+  if (mode === 'manual') renderManual();
   setStatus(MISSIONS[i].story);
+}
+function persistStory() {
+  const patch = {
+    title: document.getElementById('workTitle').value.trim() || '我的西遊記',
+    poses: savedPoses.map((p) =>
+      p ? encodePose(p, canvas.width, canvas.height) : null,
+    ),
+  };
+  pendingProjectSaves++;
+  projectQueue = projectQueue.then(async () => {
+    try {
+      await updateProject(patch);
+      projectSaveFailed = false;
+      document.getElementById('btnRetry').hidden = true;
+      return true;
+    } catch (e) {
+      projectSaveFailed = true;
+      document.getElementById('btnRetry').hidden = false;
+      setStatus('儲存失敗，姿勢保留在畫面。請重試儲存。', true);
+      return false;
+    } finally {
+      pendingProjectSaves--;
+    }
+  });
+  return projectQueue;
+}
+async function exportStory() {
+  try {
+    if (dirtyPose) await saveCurrentPose();
+    if (savedPoses.some((p) => !p)) return;
+    if (!(await persistStory())) return;
+    const out = document.createElement('canvas');
+    out.width = 2700;
+    out.height = 860;
+    const c = out.getContext('2d');
+    c.fillStyle = '#FBF8F2';
+    c.fillRect(0, 0, out.width, out.height);
+    c.fillStyle = '#33302A';
+    c.textAlign = 'center';
+    c.font = 'bold 40px sans-serif';
+    c.fillText(
+      document.getElementById('workTitle').value.trim() || '我的西遊記',
+      1350,
+      55,
+      2550,
+    );
+    savedPoses.forEach((pose, i) => {
+      c.drawImage(renderArtwork(state.rig, state.images, pose), i * 900, 85);
+      c.fillStyle = '#33302A';
+      c.font = 'bold 28px sans-serif';
+      c.fillText(i + 1 + '・' + MISSIONS[i].title, i * 900 + 450, 835);
+    });
+    await downloadCanvas(out, '西遊記-三格故事.png');
+    setStatus('三格圖已準備下載');
+  } catch (e) {
+    setStatus(e.message, true);
+  }
 }
 
 function stopPlayback() {
@@ -677,10 +756,12 @@ function stopPlayback() {
   playbackStep = -1;
 }
 
-function runPlayback() {
+async function runPlayback() {
+  if(dirtyPose)await saveCurrentPose();
+  if(projectSaveFailed)return;
   const ready = savedPoses.filter(Boolean);
-  if (ready.length < 1) {
-    setStatus('\u8acb\u5148\u4fdd\u5b58\u81f3\u5c11\u4e00\u500b\u59ff\u52e2', true);
+  if (ready.length < 3) {
+    setStatus('請先保存三格姿勢', true);
     return;
   }
   if (mode !== 'manual') setMode('manual');
@@ -712,12 +793,21 @@ function runPlayback() {
         MISSIONS[i].story,
     );
     playbackStep += 1;
-    playbackTimer = setTimeout(show, 1400);
+    playbackTimer = setTimeout(show, 2000);
   };
   show();
 }
 
 function bindUi() {
+  document.getElementById('btnDownload').onclick=exportStory;
+  document.getElementById('btnRetry').onclick=async()=>{if(await persistStory())setStatus('已儲存三格故事');};
+  document.getElementById('workTitle').addEventListener('change',()=>persistStory());
+  window.addEventListener('beforeunload', ev=>{if(dirtyPose||projectSaveFailed||pendingProjectSaves){ev.preventDefault();ev.returnValue='';}});
+  document.addEventListener('click',async ev=>{
+    if(!ev.target.closest('a[href="./color.html"]'))return;
+    ev.preventDefault();if(dirtyPose)await saveCurrentPose();else await persistStory();
+    if(!projectSaveFailed)location.href='./color.html';
+  });
   modeManual.addEventListener('change', () => {
     if (modeManual.checked) setMode('manual');
   });
@@ -815,8 +905,11 @@ async function init() {
   try {
     setStatus('\u8f09\u5165 rig \u8207\u8eab\u6bb5\u5716\u7247\u2026');
     state = await loadRig();
+    const project=await readProject();
+    if(project){document.getElementById('workTitle').value=project.title;
+      project.poses.forEach((p,i)=>{savedPoses[i]=p?decodePose(p,canvas.width,canvas.height):null;});}
     fillPartList(state.rig);
-    manualPose = createManualPose(state.rig, layoutCenter());
+    manualPose = savedPoses[0] ? clonePose(savedPoses[0]) : createManualPose(state.rig, layoutCenter());
 
     if (rodRail) {
       rodControls = createRodControls({

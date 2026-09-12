@@ -14,6 +14,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         color: resolve(__dirname, 'color.html'),
+        stage: resolve(__dirname, 'stage.html'),
       },
     },
   },
