@@ -51,7 +51,7 @@ export async function saveColoredPart(characterId, partId, pngBlob) {
     const projects = tx.objectStore('projects');
     const req = projects.get('current');
     req.onsuccess = () => {
-      const project = req.result || {id:'current',schemaVersion:1,assetVersion:'wukong-legacy-v1',characterId:'wukong',title:'我的西遊記',poses:[null,null,null],coloredPartIds:[]};
+      const project = req.result || {id:'current',schemaVersion:1,assetVersion:characterId==='wukong-v2'?'wukong-profile-v2':'wukong-legacy-v1',characterId,title:'我的西遊記',poses:[null,null,null],coloredPartIds:[]};
       project.coloredPartIds = [...new Set([...project.coloredPartIds, partId])];
       project.updatedAt = Date.now();
       projects.put(project);

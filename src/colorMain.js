@@ -566,7 +566,7 @@ async function hydrateFromDb() {
 async function init() {
   try {
     setStatus('載入悟空身段…');
-    const loaded = await loadRig(undefined, { applyColored: false });
+    const loaded = await loadRig('./characters/wukong/rig.json', { applyColored: false });
     state = {
       rig: loaded.rig,
       images: new Map(loaded.images),

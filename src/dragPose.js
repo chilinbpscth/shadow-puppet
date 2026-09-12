@@ -113,8 +113,8 @@ export function distalTip(node, scale) {
   const h = (part.height || 0) * scale;
   const px = (part.pivot?.x ?? 0.5) * w;
   const py = (part.pivot?.y ?? 0.5) * h;
-  const localDx = w * 0.5 - px;
-  const localDy = h - py;
+  const localDx = w * (part.tip?.x ?? .5) - px;
+  const localDy = h * (part.tip?.y ?? 1) - py;
   const cos = Math.cos(node.rotation);
   const sin = Math.sin(node.rotation);
   return {
@@ -133,7 +133,7 @@ function childOffsetLength(rig, childId, scale) {
 function selfBoneLength(part, scale) {
   const h = (part.height || 140) * scale;
   const py = (part.pivot?.y ?? 0.12) * h;
-  return Math.max(20, h - py);
+  return Math.max(20, h * (part.tip?.y ?? 1) - py);
 }
 
 /**

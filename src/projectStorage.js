@@ -1,11 +1,11 @@
 import { openDb } from "./colorStorage.js";
-export const ASSET_VERSION = "wukong-legacy-v1";
+export const ASSET_VERSION = "wukong-profile-v2";
 export function emptyProject() {
   return {
     id: "current",
     schemaVersion: 1,
     assetVersion: ASSET_VERSION,
-    characterId: "wukong",
+    characterId: "wukong-v2",
     title: "我的西遊記",
     poses: [null, null, null],
     coloredPartIds: [],
@@ -72,7 +72,7 @@ export async function archiveAndStart() {
       finish();
     };
     b.onsuccess = () => {
-      colors = b.result.filter((x) => x.characterId === "wukong");
+      colors = b.result.filter((x) => ["wukong", "wukong-v2"].includes(x.characterId));
       finish();
     };
     tx.oncomplete = () => {

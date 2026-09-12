@@ -37,18 +37,20 @@ document.getElementById("oldDownload").onclick = run(async () => {
     renderArtwork(
       rig,
       images,
-      createManualPose(rig, { cx: 450, cy: 375, scale: 0.8 }),
+      createManualPose(rig, { cx: 450, cy: rig.profile ? 310 : 375, scale: rig.profile ? .6 : .8 }),
     ),
     "舊影偶.png",
   );
 });
 async function init() {
   try {
-    const project = await readProject();
+    let project = await readProject();
     const loaded = await loadRig();
+    if (!project && loaded.hasColored) project = await updateProject({assetVersion:'wukong-legacy-v1',characterId:'wukong',coloredPartIds:loaded.coloredPartIds});
     existing = !!project || loaded.hasColored;
     document.getElementById("start").disabled = false;
     document.getElementById("continue").hidden = !existing;
+    if(project?.assetVersion==='wukong-legacy-v1') document.getElementById('continue').href='./legacy-color.html';
     const archives = await getArchives();
     if (archives.length) {
       const b = document.getElementById("restore");

@@ -1,3 +1,5 @@
+import {readProject} from './projectStorage.js';
+import {loadProfileRig} from './profileRig.js';
 /**
  * Load character rig.json and part PNG images.
  * Optionally overlay student-colored parts from IndexedDB.
@@ -33,8 +35,17 @@ function loadImage(src) {
  *   hasColored: boolean,
  * }>}
  */
-export async function loadRig(rigUrl = RIG_URL, opts = {}) {
+export async function loadRig(rigUrl, opts = {}) {
   const applyColored = opts.applyColored !== false;
+  if (!rigUrl) {
+    const project = await readProject();
+    if (project?.assetVersion === 'wukong-profile-v2') return loadProfileRig(applyColored);
+    if (!project) {
+      const legacy = await loadRig(RIG_URL, opts);
+      return legacy.hasColored ? legacy : loadProfileRig(applyColored);
+    }
+    rigUrl = RIG_URL;
+  }
   const res = await fetch(rigUrl);
   if (!res.ok) {
     throw new Error(`無法載入 rig：${res.status} ${rigUrl}`);

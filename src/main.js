@@ -113,7 +113,7 @@ function setStatus(msg, isError = false) {
 }
 
 function layoutCenter() {
-  return { cx: canvas.width / 2, cy: canvas.height * 0.52, scale: .8 };
+  return { cx: canvas.width / 2, cy: canvas.height * (state?.rig.profile ? .43 : .52), scale: state?.rig.profile ? .62 : .8 };
 }
 
 function fillPartList(rig) {
@@ -908,6 +908,11 @@ async function init() {
     const project=await readProject();
     if(project){document.getElementById('workTitle').value=project.title;
       project.poses.forEach((p,i)=>{savedPoses[i]=p?decodePose(p,canvas.width,canvas.height):null;});}
+    if (state.rig.profile) {
+      document.querySelector('.preview-note').textContent = '完整側身悟空・你的色彩會跟住影偶一起動';
+      modeBody.disabled = true;
+      document.getElementById('labBody').textContent = '身體驅動（此造型暫未開放，先用棍控）';
+    }
     fillPartList(state.rig);
     manualPose = savedPoses[0] ? clonePose(savedPoses[0]) : createManualPose(state.rig, layoutCenter());
 
@@ -929,15 +934,7 @@ async function init() {
     updateColorNotice(!!state.hasColored);
     setMode('manual');
     setControlMode('rods');
-    setStatus(
-      '\u5df2\u8f09\u5165 ' +
-        state.rig.parts.length +
-        ' \u4ef6\u8eab\u6bb5 \u00b7 ' +
-        state.rig.labelZh +
-        (state.hasColored
-          ? ' \u2014 \u5df2\u7528\u4f60\u7684\u586b\u8272'
-          : ' \u2014 \u53ef\u5957\u7528\u59ff\u52e2\u6216\u68cd\u63a7'),
-    );
+    setStatus(state.hasColored ? '你的悟空已上幕，可以開始編故事。' : '悟空已準備好，可先填色或直接操偶。');
   } catch (err) {
     console.error(err);
     setStatus(err?.message || String(err), true);

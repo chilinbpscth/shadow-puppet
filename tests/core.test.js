@@ -148,7 +148,7 @@ test("legacy v1 DB upgrades without losing old colored PNG", async () => {
   );
 });
 test("project and color writes preserve each other and archive restores both", async () => {
-  await updateProject({ title: "悟空出發" });
+  await updateProject({ title: "悟空出發", characterId: "wukong", assetVersion: "wukong-legacy-v1" });
   await saveColoredPart("wukong", "torso", new Blob(["paint"]));
   const pose = encodePose(
     createManualPose(rig, { cx: 450, cy: 375, scale: 0.8 }),
@@ -200,4 +200,30 @@ test('dragging root far away is constrained back onto stage', async () => {
   assert.ok(p.rootX>0 && p.rootX<900 && p.rootY>0 && p.rootY<720);
   constrainPose(rig,p,900,720);
   assert.ok(Math.abs(first.x-p.rootX)<1e-8 && Math.abs(first.y-p.rootY)<1e-8);
+});
+
+
+test('whole-figure artwork archives with its asset version and returns intact', async () => {
+  await archiveAndStart();
+  assert.equal((await readProject()).assetVersion,'wukong-profile-v2');
+  await saveColoredPart('wukong-v2','whole',new Blob(['whole-painted-figure']));
+  await updateProject({title:'側身悟空'});
+  await archiveAndStart();
+  const archive=(await getArchives()).find(x=>x.project.title==='側身悟空');
+  assert.equal(archive.project.characterId,'wukong-v2');
+  await restoreArchive(archive);
+  assert.equal((await readProject()).assetVersion,'wukong-profile-v2');
+  assert.equal(await(await loadColoredPart('wukong-v2','whole')).text(),'whole-painted-figure');
+});
+
+test('cropped image grip coordinates keep the staff at the actual painted hand', () => {
+  const cropped=structuredClone(rig);
+  const hand=cropped.parts.find(p=>p.id==='lowerArmR');
+  hand.tip={x:.38,y:.83};
+  const p=createManualPose(cropped,{cx:450,cy:310,scale:.62});
+  applyDrag(cropped,p,{kind:'wrist',chain:['upperArmR','lowerArmR']},580,260);
+  const joints=resolveManualJoints(cropped,p);
+  const wrist=distalTip(joints.get('lowerArmR'),p.scale);
+  assert.equal(joints.get('staff').x,wrist.x);
+  assert.equal(joints.get('staff').y,wrist.y);
 });

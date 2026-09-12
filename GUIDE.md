@@ -1,43 +1,40 @@
-# 皮影戲・西遊記：三格故事試玩版
+# 皮影戲・西遊記：完整悟空三格故事
 
-2026-09-12。本分支為預覽，正式 GitHub Pages 未更新。
+2026-09-12 更新。沿用原 repo 與 GitHub Pages；按用家指示發布本輪試玩版。
 
 ## 學生玩法
 
-1. 首頁選「開始創作」或「繼續作品」。
-2. 先畫頭、上衣、金箍棒即可；不用填完 12 件。大面積按「填色」，再用畫筆加花紋。5–10 分鐘是入門創作設計目標，尚未經學生計時驗證。
-3. 右上小圖即時預覽完整角色，金圈標示当前部位。每部位有最多 20 步復原（本次開頁期間）。
-4. 每筆完成自動保存；進入演出會等候儲存。若失敗，畫面保留，按「重試儲存」。
-5. 拖下方軀幹／左手／右手棍擺姿勢；「關節微調」可調手腕及腳踝。金箍棒跟右手。
-6. 依次編排「出發、遇險、迎戰」，可用參考姿勢再改。「下一步」會先保存當前格；切任務亦會保存已修改格。
-7. 完成三格後可重播（每格兩秒）或下載橫排 PNG；圖片包含作品名稱與三格標題，沒有控制棍及教師資訊。
+1. [首頁](https://chilinbpscth.github.io/shadow-puppet/) 選「開始創作」或「繼續作品」。
+2. [畫悟空](https://chilinbpscth.github.io/shadow-puppet/color.html)：直接喺完整側身悟空上填色、畫花紋，旁邊有彩色參考；不用逐件揀部位或組裝。不用填滿才演。
+3. 用填色處理大面積，再用畫筆加幾筆花紋。橡皮恢復原白底、保留輪廓；本次開頁期間最多 20 步復原，身段外空劃不佔步數。5–10 分鐘只是入門設計目標，未經學生計時。
+4. 每筆完成自動保存。「讓悟空上幕」會等待保存完成；失敗保留畫面，按「重試儲存」。
+5. [舞台](https://chilinbpscth.github.io/shadow-puppet/stage.html)：同一隻帶色悟空上幕，拖下方三支棍擺姿勢。關節微調可拖手腕、腳踝；金箍棒跟右手。
+6. 編排「出發 → 遇險 → 迎戰」。可套用姿勢再修改；「保存這一格」保存當前格，「下一步」先保存再轉格。已存格可返回修改。
+7. 三格完成後按「三格展示」，每格約兩秒；「下載三格圖」輸出橫排 PNG，包含作品名稱和各格標題，不含控制棍、工具或教師資訊。
 
-## 保存與舊作品
+## 作品保存
 
-不用登入。作品只在當前瀏覽器，不會自動跨裝置或上載藝言堂。清網站資料仍會刪除作品；可先下載 PNG。PNG 是展示圖，不能重新匯入作可編輯作品。
+不用登入、沒有新增伺服器。作品只存在該瀏覽器；清網站資料會刪除作品。PNG 是展示圖，不能匯入繼續編輯。
 
-原 IndexedDB `shadow-puppet/coloredParts` 保留；資料庫升為版本 2，加 `projects` store。當前作品為 `current`，schemaVersion 1、assetVersion `wukong-legacy-v1`，包含標題、填色 part IDs、三格相對座標及角度、更新時間。圖片仍按原 character/part key 儲存。圖像及相應作品 metadata 在同一 transaction 寫入。
+保留 IndexedDB `shadow-puppet/coloredParts`，升級 DB 至 v2，新增 `projects`。作品 schemaVersion 1；新版 characterId `wukong-v2`、assetVersion `wukong-profile-v2`，整張填畫存在 `whole`；三格姿勢使用相對舞台座標。圖片及 metadata 在同一 transaction 寫入。
 
-「開始創作」遇到已有作品時先顯示下載舊影偶入口；封存舊作品及顏色後才開新作。首頁可還原最新封存，還原前亦會封存當前作品。舊記錄不直接套入新素材輪廓。
+舊作品仍使用 `wukong-legacy-v1` 及原有素材，經 `legacy-color.html` 繼續編輯。開始新版前提供旧影偶 PNG 下載，再封存舊作品及顏色；首頁可還原最新封存，還原前也先封存當前作品。舊筆跡不會套入新輪廓。
 
-## 本輪美術與限制
+## 本輪驗證與限制
 
-現有 12 件悟空素材未替換。新美術為傳統皮影簡化版，已提供完整彩色示意與填畫線稿，等待用家確認；因填色時間考量，建議再簡化細花紋。確認後才切新身段、綁關節及加入新 assetVersion 路徑。
+已實玩完整填畫、空劃不吃復原、橡皮、保存後上幕、右手與棒連動、三格保存重載、下載 PNG。瀏覽器 768×1024、1024×768 尺寸已檢查；這不是實體 iPad Safari 通過。仍需老師及 2–3 位學生課堂試玩，確認操作、三格表意、入門填畫時間與重開作品。
 
-相機保留於「更多玩法」，不屬本輪驗收；相機姿勢須回手動模式才保存。實體 iPad Safari、鏡頭、2–3 位學生試玩、正式部署尚未完成。
+新版側身造型暫時只用棍控／關節微調，身體驅動按鈕停用並標示原因；舊造型相機功能保留。相機／實體 iPad 未驗收。沒有連續錄影、多角色、登入或藝言堂直接上載。
 
-## 維護
+## 維護及部署
 
 ```sh
 npm ci
 npm test
-npm run dev -- --host 127.0.0.1 --port 5192
+npm run dev
 npm run build
-npm run preview -- --host 127.0.0.1 --port 5193
 ```
 
-首頁 `index.html`，繪畫 `color.html`，舞台 `stage.html`。正式網址仍為 https://chilinbpscth.github.io/shadow-puppet/ 。本機 preview 與正式站是不同來源，資料不互通。
+`dist/` 部署至原 `gh-pages`；原始碼 [repo](https://github.com/chilinbpscth/shadow-puppet)。首頁 `index.html`，繪畫 `color.html`，舞台 `stage.html`，舊作品 `legacy-color.html`。本機預覽與正式站資料不互通。
 
-上線前：完成美術確認、新身段製作及測試、學生試玩，再把 build 的 dist 部署至原 `gh-pages` 分支，核對三個頁面及舊資料升級。不在本轮直接改正式站。
-
-回退注意：原程式使用 IndexedDB v1，不能直接開已升為 v2 的資料庫。若回退至舊介面，要將舊程式 `src/colorStorage.js` 的 DB_VERSION 改為 2 再 build，保留新 store，不能刪 DB。既有 main 與 gh-pages commit 已記於 WORK_STATUS。
+舊 main 基準 `1223ac198211abc8b6c8d10531256ca378768db1`，舊 gh-pages 基準 `62c618d2a1269a1bfd8fc828c94b9a701f401985`；另保留 `before-whole-figure-source`、`before-whole-figure-pages` 標籤。回退舊程式時，先將原 `src/colorStorage.js` 的 DB_VERSION 改成 2 再 build，不能直接開已升級資料庫或刪 DB；亦可用現版 `legacy-color.html` 處理舊作品。
