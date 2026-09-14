@@ -239,3 +239,71 @@ export function strokePaint(
   }
   return touched;
 }
+
+/**
+ * Axis-aligned bounds of opaque template pixels (alpha >= ALPHA_MIN).
+ * @param {Uint8ClampedArray} src RGBA
+ * @param {number} w
+ * @param {number} h
+ * @returns {{x:number,y:number,w:number,h:number}|null}
+ */
+export function opaqueBounds(src, w, h) {
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (src[(y * w + x) * 4 + 3] < ALPHA_MIN) continue;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  }
+  if (maxX < 0) return null;
+  return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+}
+
+/**
+ * Cover-fit photo into silhouette bbox; paint only unlocked interior pixels.
+ * Outside silhouette / outline (lock=1) stay unchanged. Keeps destination alpha.
+ *
+ * @param {Uint8ClampedArray} data current canvas RGBA (mutated)
+ * @param {number} w
+ * @param {number} h
+ * @param {Uint8ClampedArray} photo RGBA
+ * @param {number} photoW
+ * @param {number} photoH
+ * @param {Uint8Array} lock boundary mask from original
+ * @param {{x:number,y:number,w:number,h:number}} bbox opaque silhouette bounds
+ * @returns {number} pixels painted
+ */
+export function applyPhotoCover(data, w, h, photo, photoW, photoH, lock, bbox) {
+  if (!bbox || bbox.w < 1 || bbox.h < 1 || photoW < 1 || photoH < 1) return 0;
+  const scale = Math.max(bbox.w / photoW, bbox.h / photoH);
+  const drawW = photoW * scale;
+  const drawH = photoH * scale;
+  const ox = bbox.x + (bbox.w - drawW) / 2;
+  const oy = bbox.y + (bbox.h - drawH) / 2;
+  const x0 = Math.max(0, Math.floor(bbox.x));
+  const y0 = Math.max(0, Math.floor(bbox.y));
+  const x1 = Math.min(w - 1, Math.ceil(bbox.x + bbox.w - 1));
+  const y1 = Math.min(h - 1, Math.ceil(bbox.y + bbox.h - 1));
+  let painted = 0;
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      const i = y * w + x;
+      if (lock[i]) continue;
+      const p = i * 4;
+      if (data[p + 3] < ALPHA_MIN) continue;
+      const u = (x + 0.5 - ox) / scale;
+      const v = (y + 0.5 - oy) / scale;
+      const sx = Math.min(photoW - 1, Math.max(0, Math.floor(u)));
+      const sy = Math.min(photoH - 1, Math.max(0, Math.floor(v)));
+      const sp = (sy * photoW + sx) * 4;
+      data[p] = photo[sp];
+      data[p + 1] = photo[sp + 1];
+      data[p + 2] = photo[sp + 2];
+      painted += 1;
+    }
+  }
+  return painted;
+}

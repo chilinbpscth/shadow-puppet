@@ -16,6 +16,7 @@ export default defineConfig({
         color: resolve(__dirname, 'color.html'),
         stage: resolve(__dirname, 'stage.html'),
         legacyColor: resolve(__dirname, 'legacy-color.html'),
+        print: resolve(__dirname, 'print.html'),
       },
     },
   },

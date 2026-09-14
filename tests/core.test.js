@@ -24,7 +24,8 @@ import {
   loadColoredPart,
   openDb,
 } from "../src/colorStorage.js";
-import { buildBoundaryMask, strokePaint, floodFill } from "../src/colorFill.js";
+import { buildBoundaryMask, strokePaint, floodFill, opaqueBounds, applyPhotoCover } from "../src/colorFill.js";
+import { coverFitTransform, maskToTemplateAlpha } from "../src/photoImport.js";
 const rig = JSON.parse(
   readFileSync(
     new URL("../public/characters/wukong/rig.json", import.meta.url),
@@ -276,4 +277,47 @@ test('body rod displacement drives legs without altering hand pose or requiring 
   assert.equal(moved.localRot.get('lowerArmR'),base.localRot.get('lowerArmR'));
   assert.deepEqual(moveBodyRod(profile,base,24,-20),moved);
   assert.deepEqual(moveBodyRod(profile,base,0,0),initial);
+});
+
+test("photo cover-fit and silhouette mask", () => {
+  // 3x2 template: transparent | white fill | black outline on row0; rest transparent
+  const template = new Uint8ClampedArray([
+    0,0,0,0,  255,255,255,255,  0,0,0,255,
+    0,0,0,0,  255,255,255,255,  0,0,0,0,
+  ]);
+  const bounds = opaqueBounds(template, 3, 2);
+  assert.deepEqual(bounds, { x: 1, y: 0, w: 2, h: 2 });
+  const lock = buildBoundaryMask(template, 3, 2);
+  assert.equal(lock[0], 1);
+  assert.equal(lock[1], 0);
+  assert.equal(lock[2], 1);
+  const photo = new Uint8ClampedArray([
+    10,20,30,255, 40,50,60,255,
+    70,80,90,255, 11,22,33,255,
+  ]);
+  const data = template.slice();
+  const n = applyPhotoCover(data, 3, 2, photo, 2, 2, lock, bounds);
+  assert.ok(n >= 2);
+  assert.equal(data[0], 0); // outside stays
+  assert.equal(data[8], 0); // outline locked stays black
+  assert.equal(data[9], 0);
+  assert.equal(data[10], 0);
+  assert.notEqual(data[4], 255); // fill painted from photo
+  const t = coverFitTransform(2, 2, bounds);
+  assert.ok(t.scale >= 1);
+  assert.equal(t.tx, bounds.x + bounds.w / 2);
+  const masked = template.slice();
+  // pretend photo already drawn as red everywhere
+  for (let i = 0; i < masked.length; i += 4) {
+    masked[i] = 200; masked[i+1] = 10; masked[i+2] = 10; masked[i+3] = 255;
+  }
+  const kept = maskToTemplateAlpha(masked, template, 3, 2, true);
+  assert.ok(kept >= 2);
+  assert.equal(masked[3], 0); // outside transparent
+  assert.equal(masked[8], 0); // outline forced black
+  assert.equal(masked[9], 0);
+  assert.equal(masked[10], 0);
+  assert.equal(masked[11], 255);
+  assert.equal(masked[4], 200); // interior keeps photo color
+  assert.equal(masked[7], 255);
 });

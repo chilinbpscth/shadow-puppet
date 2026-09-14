@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>列印線稿・孫悟空</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 15px -apple-system, "PingFang TC", sans-serif;
+      color: #33302a;
+      background: #efeae1;
+      padding: 16px;
+    }
+    header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    a.btn, button {
+      border: 1px solid #dcd4c4; border-radius: 10px; background: #fbf8f2;
+      color: inherit; min-height: 44px; padding: 10px 16px; text-decoration: none; cursor: pointer; font: inherit;
+    }
+    button.primary { background: #bc3532; color: #fff; border-color: #bc3532; }
+    .note { color: #877f71; line-height: 1.7; max-width: 40em; }
+    .sheet {
+      margin: 16px auto; width: min(100%, 210mm); background: #fff;
+      border: 1px solid #dcd4c4; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .sheet object, .sheet img { display: block; width: 100%; height: auto; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      header, .note, .no-print { display: none !important; }
+      .sheet { border: none; box-shadow: none; margin: 0; width: 100%; border-radius: 0; }
+    }
+    @page { size: A4 portrait; margin: 0; }
+  </style>
+</head>
+<body>
+  <header class="no-print">
+    <a class="btn" href="./color.html">‹ 返回畫悟空</a>
+    <button class="primary" type="button" onclick="window.print()">列印 A4</button>
+    <a class="btn" href="./print/wukong-profile-line-a4.svg" download="wukong-profile-line-a4.svg">下載 SVG</a>
+  </header>
+  <p class="note no-print">老師：印線稿 → 學生在紙上畫 → 返回 app 按「影相入偶」套入悟空側面輪廓。線稿為白底黑線，與 wukong-v2 剪影一致。</p>
+  <div class="sheet" aria-label="A4 線稿預覽">
+    <object type="image/svg+xml" data="./print/wukong-profile-line-a4.svg" title="孫悟空側面線稿">
+      <img src="./characters/wukong-v2/outline-stroke.png" alt="孫悟空側面線稿">
+    </object>
+  </div>
+</body>
+</html>

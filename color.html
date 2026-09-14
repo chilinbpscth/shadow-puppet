@@ -2,11 +2,29 @@
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>畫悟空・皮影戲</title><link rel="stylesheet" href="/src/redesign.css"></head>
 <body class="color-page whole-mode">
 <header class="topbar"><a id="backHome" href="./index.html">‹ 首頁</a><span class="seal">影</span><strong>畫你的悟空</strong><span class="step-badge">畫影偶 → 演故事</span></header>
-<p class="whole-intro">在完整悟空上直接填色、畫花紋。喜歡就上幕，不用填滿。</p>
+<p class="whole-intro">在完整悟空上直接填色、畫花紋；亦可影紙稿入偶。喜歡就上幕，不用填滿。</p>
 <main class="whole-workspace">
 <aside class="art-reference"><h2>配色參考</h2><div class="reference-crop"><img src="./characters/wukong-v2/reference.png" alt="已認可的側身悟空彩色造型參考"></div><p>選幾種喜歡的顏色，<br>畫出自己的悟空。</p></aside>
 <section class="whole-paper" id="wholeWrap"><canvas id="wholeCanvas" aria-label="完整悟空填畫畫布"></canvas></section>
 </main>
 <p id="colorStatus" class="status" role="status">載入悟空線稿…</p>
-<footer class="whole-tools"><div class="tool-row"><button id="brush" aria-pressed="true">畫筆</button><button id="fill" aria-pressed="false">填色</button><button id="eraser" aria-pressed="false">橡皮</button></div><div class="tool-row" aria-label="筆粗"><button data-size="4">細</button><button data-size="10" aria-pressed="true">中</button><button data-size="22">大</button></div><div id="wholePalette" class="palette" aria-label="色板"></div><button id="undo" disabled>復原</button><button id="retry" hidden>重試儲存</button><a class="btn primary-done" id="enterStage" href="./stage.html">讓悟空上幕 →</a></footer>
-<script type="module" src="/src/wholeColor.js"></script></body></html>
+<footer class="whole-tools">
+  <div class="tool-row"><button id="brush" aria-pressed="true">畫筆</button><button id="fill" aria-pressed="false">填色</button><button id="eraser" aria-pressed="false">橡皮</button></div>
+  <div class="tool-row" aria-label="筆粗"><button data-size="4">細</button><button data-size="10" aria-pressed="true">中</button><button data-size="22">大</button></div>
+  <div id="wholePalette" class="palette" aria-label="色板"></div>
+  <div class="tool-row photo-entry-row">
+    <button type="button" id="photoEntry">影相入偶</button>
+    <a class="btn" id="printOutline" href="./print.html">列印線稿</a>
+  </div>
+  <div id="photoChooser" class="photo-chooser" hidden>
+    <button type="button" id="photoCamera">相機</button>
+    <button type="button" id="photoAlbum">相簿</button>
+  </div>
+  <input id="photoCameraInput" type="file" accept="image/*" capture="environment" hidden aria-hidden="true">
+  <input id="photoAlbumInput" type="file" accept="image/*" hidden aria-hidden="true">
+  <button id="undo" disabled>復原</button>
+  <button id="retry" hidden>重試儲存</button>
+  <a class="btn primary-done" id="enterStage" href="./stage.html">讓悟空上幕 →</a>
+</footer>
+<script type="module" src="/src/wholeColor.js"></script>
+</body></html>
