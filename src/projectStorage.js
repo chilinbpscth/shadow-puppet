@@ -1,40 +1,52 @@
-import { openDb } from "./colorStorage.js";
-export const ASSET_VERSION = "wukong-profile-v2";
-export function emptyProject() {
+import {openDb} from './colorStorage.js';
+import {defaultCharacter, getCharacter} from './characters.js';
+
+export const ASSET_VERSION = defaultCharacter().assetVersion;
+
+export function emptyProject(characterId) {
+  const ch = getCharacter(characterId) || defaultCharacter();
   return {
-    id: "current",
+    id: 'current',
     schemaVersion: 1,
-    assetVersion: ASSET_VERSION,
-    characterId: "wukong-v2",
-    title: "我的西遊記",
+    assetVersion: ch.assetVersion,
+    characterId: ch.id,
+    title: '我的西遊記',
     poses: [null, null, null],
     coloredPartIds: [],
     updatedAt: Date.now(),
   };
 }
+
 export async function readProject() {
   const db = await openDb();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction("projects");
-    const r = tx.objectStore("projects").get("current");
+    const tx = db.transaction('projects');
+    const r = tx.objectStore('projects').get('current');
     r.onsuccess = () => resolve(r.result || null);
     r.onerror = () => reject(r.error);
     tx.oncomplete = () => db.close();
   });
 }
+
 export async function updateProject(patch) {
   const db = await openDb();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction("projects", "readwrite");
-    const st = tx.objectStore("projects");
+    const tx = db.transaction('projects', 'readwrite');
+    const st = tx.objectStore('projects');
     let value;
-    const r = st.get("current");
+    const r = st.get('current');
     r.onsuccess = () => {
+      const base = r.result || emptyProject(patch?.characterId);
       value = {
-        ...(r.result || emptyProject()),
+        ...base,
         ...patch,
         updatedAt: Date.now(),
       };
+      // Keep assetVersion in sync when characterId changes without explicit assetVersion
+      if (patch?.characterId && !patch.assetVersion) {
+        const ch = getCharacter(patch.characterId);
+        if (ch) value.assetVersion = ch.assetVersion;
+      }
       st.put(value);
     };
     tx.oncomplete = () => {
@@ -47,32 +59,38 @@ export async function updateProject(patch) {
     };
   });
 }
-export async function archiveAndStart() {
+
+export async function archiveAndStart(nextCharacterId) {
   const db = await openDb();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(["projects", "coloredParts"], "readwrite");
-    const projects = tx.objectStore("projects"),
-      parts = tx.objectStore("coloredParts");
-    const a = projects.get("current"),
-      b = parts.getAll();
-    let project, colors;
+    const tx = db.transaction(['projects', 'coloredParts'], 'readwrite');
+    const projects = tx.objectStore('projects');
+    const parts = tx.objectStore('coloredParts');
+    const a = projects.get('current');
+    const b = parts.getAll();
+    let project;
+    let colors;
     const finish = () => {
       if (project === undefined || colors === undefined) return;
+      const currentId = project?.characterId || 'wukong-v2';
+      // Archive only the active character's colors (legacy wukong paired with wukong-v2).
+      // Do NOT delete other characters' coloredParts rows.
+      const toArchive = colors.filter((x) => x.characterId === currentId || (currentId.startsWith('wukong') && ['wukong', 'wukong-v2'].includes(x.characterId)));
       projects.put({
-        id: "archive-" + Date.now(),
+        id: 'archive-' + Date.now(),
         project: project || emptyProject(),
-        colors,
+        colors: toArchive,
         updatedAt: Date.now(),
       });
-      for (const row of colors) parts.delete([row.characterId, row.partId]);
-      projects.put(emptyProject());
+      for (const row of toArchive) parts.delete([row.characterId, row.partId]);
+      projects.put(emptyProject(nextCharacterId));
     };
     a.onsuccess = () => {
       project = a.result || null;
       finish();
     };
     b.onsuccess = () => {
-      colors = b.result.filter((x) => ["wukong", "wukong-v2"].includes(x.characterId));
+      colors = b.result;
       finish();
     };
     tx.oncomplete = () => {
@@ -85,28 +103,30 @@ export async function archiveAndStart() {
     };
   });
 }
+
 export async function getArchives() {
   const db = await openDb();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction("projects");
-    const r = tx.objectStore("projects").getAll();
+    const tx = db.transaction('projects');
+    const r = tx.objectStore('projects').getAll();
     r.onsuccess = () =>
       resolve(
         r.result
-          .filter((x) => x.id.startsWith("archive-"))
+          .filter((x) => x.id.startsWith('archive-'))
           .sort((a, b) => b.updatedAt - a.updatedAt),
       );
     r.onerror = () => reject(r.error);
     tx.oncomplete = () => db.close();
   });
 }
+
 export async function restoreArchive(archive) {
-  await archiveAndStart();
+  await archiveAndStart(archive?.project?.characterId);
   const db = await openDb();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(["projects", "coloredParts"], "readwrite");
-    tx.objectStore("projects").put({ ...archive.project, id: "current" });
-    for (const row of archive.colors) tx.objectStore("coloredParts").put(row);
+    const tx = db.transaction(['projects', 'coloredParts'], 'readwrite');
+    tx.objectStore('projects').put({...archive.project, id: 'current'});
+    for (const row of archive.colors) tx.objectStore('coloredParts').put(row);
     tx.oncomplete = () => {
       db.close();
       resolve();
@@ -117,7 +137,7 @@ export async function restoreArchive(archive) {
     };
   });
 }
-// Normalized coordinates preserve framing independently of display size.
+
 export function encodePose(p, w, h) {
   return {
     facing: p.facing === -1 ? -1 : 1,

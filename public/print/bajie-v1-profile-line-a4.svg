@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297">
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <text x="105.0" y="14" text-anchor="middle" font-family="sans-serif" font-size="6" fill="#333">豬八戒・側面線稿</text>
+  <g fill="none" stroke="#000000" stroke-width="1.0625" stroke-linejoin="round" stroke-linecap="round"
+     transform="translate(20,21.0) scale(0.265625)">
+
+    <!-- pig head -->
+    <ellipse cx="380" cy="200" rx="70" ry="62"/>
+    <!-- snout facing right -->
+    <ellipse cx="455" cy="215" rx="38" ry="28"/>
+    <ellipse cx="480" cy="208" rx="8" ry="10"/>
+    <ellipse cx="480" cy="225" rx="8" ry="10"/>
+    <!-- ears -->
+    <path d="M330,150 L300,80 L360,130 Z"/>
+    <path d="M400,145 L430,70 L450,140 Z"/>
+    <!-- neck -->
+    <rect x="350" y="255" width="50" height="30" rx="8"/>
+    <!-- big belly torso -->
+    <path d="M250,280 L420,275 L460,480 L400,560 L240,540 L220,380 Z"/>
+    <!-- arms -->
+    <path d="M250,310 L180,400 L160,520 L200,530 L240,410 L280,330 Z"/>
+    <path d="M420,300 L500,350 L560,420 L530,450 L450,370 L425,320 Z"/>
+    <!-- rake (九齿钉耙) held front -->
+    <path d="M540,200 L555,200 L555,460 L540,460 Z" fill="#fff"/>
+    <path d="M520,200 L575,200 L575,230 L520,230 Z"/>
+    <path d="M525,195 L530,170 M540,195 L545,165 M555,195 L560,170 M565,195 L570,165" fill="none"/>
+    <!-- legs -->
+    <path d="M280,540 L260,800 L310,810 L340,555 Z"/>
+    <path d="M380,550 L400,800 L460,805 L430,555 Z"/>
+    <ellipse cx="280" cy="820" rx="40" ry="18"/>
+    <ellipse cx="440" cy="820" rx="40" ry="18"/>
+    <!-- short tail curl -->
+    <path d="M230,480 C180,470 170,520 200,540" fill="none" stroke-width="6"/>
+    <circle cx="380" cy="260" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="230" cy="330" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="185" cy="450" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="450" cy="320" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="530" cy="390" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="310" cy="560" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="400" cy="560" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="285" cy="800" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="430" cy="800" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
+    
+  </g>
+  <text x="105.0" y="289" text-anchor="middle" font-family="sans-serif" font-size="4" fill="#877f71">皮影戲・列印後著色・影相入偶</text>
+</svg>

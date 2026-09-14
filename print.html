@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>列印線稿・孫悟空</title>
+  <title>列印線稿・皮影戲</title>
   <style>
     :root { color-scheme: light; }
     * { box-sizing: border-box; }
@@ -15,7 +15,7 @@
       padding: 16px;
     }
     header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-    a.btn, button {
+    a.btn, button, select {
       border: 1px solid #dcd4c4; border-radius: 10px; background: #fbf8f2;
       color: inherit; min-height: 44px; padding: 10px 16px; text-decoration: none; cursor: pointer; font: inherit;
     }
@@ -27,6 +27,9 @@
       box-shadow: 0 1px 4px rgba(0,0,0,.06);
     }
     .sheet object, .sheet img { display: block; width: 100%; height: auto; }
+    .char-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+    .char-links a { min-height: 40px; padding: 8px 12px; border-radius: 8px; border: 1px solid #dcd4c4; background: #fbf8f2; text-decoration: none; color: inherit; }
+    .char-links a.is-active { border-color: #bc3532; background: #fff8f6; }
     @media print {
       body { background: #fff; padding: 0; }
       header, .note, .no-print { display: none !important; }
@@ -37,15 +40,59 @@
 </head>
 <body>
   <header class="no-print">
-    <a class="btn" href="./color.html">‹ 返回畫悟空</a>
+    <a class="btn" href="./color.html">‹ 返回畫頁</a>
+    <label>角色
+      <select id="charSelect" aria-label="選擇線稿角色"></select>
+    </label>
     <button class="primary" type="button" onclick="window.print()">列印 A4</button>
-    <a class="btn" href="./print/wukong-profile-line-a4.svg" download="wukong-profile-line-a4.svg">下載 SVG</a>
+    <a class="btn" id="downloadSvg" href="./print/wukong-profile-line-a4.svg" download>下載 SVG</a>
   </header>
-  <p class="note no-print">老師：印線稿 → 學生在紙上畫 → 返回 app 按「影相入偶」套入悟空側面輪廓。線稿為白底黑線，與 wukong-v2 剪影一致。</p>
+  <p class="note no-print" id="printNote">老師：印線稿 → 學生在紙上畫 → 返回 app 按「影相入偶」套入側面輪廓。</p>
+  <div class="char-links no-print" id="charLinks"></div>
   <div class="sheet" aria-label="A4 線稿預覽">
-    <object type="image/svg+xml" data="./print/wukong-profile-line-a4.svg" title="孫悟空側面線稿">
-      <img src="./characters/wukong-v2/outline-stroke.png" alt="孫悟空側面線稿">
+    <object id="sheetObject" type="image/svg+xml" data="./print/wukong-profile-line-a4.svg" title="側面線稿">
+      <img id="sheetFallback" src="./characters/wukong-v2/template.png" alt="側面線稿">
     </object>
   </div>
+  <script type="module">
+    import {listCharacters, getCharacter, defaultCharacter} from './src/characters.js';
+    const params = new URLSearchParams(location.search);
+    let id = params.get('char') || defaultCharacter().id;
+    const select = document.getElementById('charSelect');
+    const links = document.getElementById('charLinks');
+    function apply(cid) {
+      const ch = getCharacter(cid) || defaultCharacter();
+      id = ch.id;
+      document.title = `列印線稿・${ch.labelZh}`;
+      document.getElementById('printNote').textContent =
+        `老師：印${ch.labelZh}線稿 → 學生在紙上畫 → 返回 app 按「影相入偶」套入側面輪廓。線稿為白底黑線。`;
+      const obj = document.getElementById('sheetObject');
+      const fb = document.getElementById('sheetFallback');
+      const dl = document.getElementById('downloadSvg');
+      obj.data = ch.lineArtUrl;
+      obj.setAttribute('title', `${ch.labelZh}側面線稿`);
+      fb.src = ch.templateUrl;
+      fb.alt = `${ch.labelZh}側面線稿`;
+      dl.href = ch.lineArtUrl;
+      dl.download = ch.lineArtUrl.split('/').pop();
+      select.value = ch.id;
+      for (const a of links.querySelectorAll('a')) a.classList.toggle('is-active', a.dataset.id === ch.id);
+      history.replaceState(null, '', `?char=${encodeURIComponent(ch.id)}`);
+    }
+    for (const ch of listCharacters()) {
+      const opt = document.createElement('option');
+      opt.value = ch.id;
+      opt.textContent = ch.labelZh;
+      select.append(opt);
+      const a = document.createElement('a');
+      a.href = `?char=${encodeURIComponent(ch.id)}`;
+      a.dataset.id = ch.id;
+      a.textContent = ch.labelZh;
+      a.onclick = (ev) => { ev.preventDefault(); apply(ch.id); };
+      links.append(a);
+    }
+    select.onchange = () => apply(select.value);
+    apply(id);
+  </script>
 </body>
 </html>

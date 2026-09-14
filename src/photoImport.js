@@ -1,6 +1,6 @@
 /**
- * P0 photo-into-puppet: align photo under wukong-v2 silhouette, mask, export PNG.
- * Canvas size matches profileRig TEMPLATE_* (640×960).
+ * P0/P1 photo-into-puppet: align photo under active character silhouette, mask, export PNG.
+ * Canvas size matches the loaded template (typically 640×960).
  */
 import {TEMPLATE_WIDTH, TEMPLATE_HEIGHT} from './profileRig.js';
 import {canvasToPngBlob, opaqueBounds} from './colorFill.js';
@@ -9,11 +9,6 @@ const ALPHA_MIN = 8;
 const OUTLINE_LUMA_MAX = 40;
 const MAX_PHOTO_EDGE = 1600;
 
-/**
- * Downscale large photos before align/composite.
- * @param {HTMLImageElement|ImageBitmap} img
- * @returns {HTMLCanvasElement}
- */
 export function downscalePhoto(img) {
   const iw = img.naturalWidth || img.width;
   const ih = img.naturalHeight || img.height;
@@ -26,10 +21,6 @@ export function downscalePhoto(img) {
   return c;
 }
 
-/**
- * Cover-fit transform placing photo over silhouette bbox.
- * Transform: scale relative to photo pixels; tx/ty = photo center on canvas.
- */
 export function coverFitTransform(photoW, photoH, bbox) {
   const scale = Math.max(bbox.w / photoW, bbox.h / photoH);
   return {
@@ -40,9 +31,6 @@ export function coverFitTransform(photoW, photoH, bbox) {
   };
 }
 
-/**
- * Draw photo with transform onto a 2d context (canvas space).
- */
 export function drawPhotoTransformed(ctx, photo, t) {
   ctx.save();
   ctx.translate(t.tx, t.ty);
@@ -52,16 +40,6 @@ export function drawPhotoTransformed(ctx, photo, t) {
   ctx.restore();
 }
 
-/**
- * Mask already-drawn photo pixels by template silhouette (pure; no DOM).
- * Outside → transparent; optional black outline from template.
- * @param {Uint8ClampedArray} photoRGBA mutated
- * @param {Uint8ClampedArray} templateRGBA
- * @param {number} w
- * @param {number} h
- * @param {boolean} [keepOutline=true]
- * @returns {number} opaque pixels kept
- */
 export function maskToTemplateAlpha(photoRGBA, templateRGBA, w, h, keepOutline = true) {
   let kept = 0;
   for (let i = 0, p = 0; i < w * h; i++, p += 4) {
@@ -83,13 +61,9 @@ export function maskToTemplateAlpha(photoRGBA, templateRGBA, w, h, keepOutline =
   return kept;
 }
 
-/**
- * Composite: photo under template alpha mask → 640×960 ImageData.
- * Outside silhouette transparent; optional thin black outline from template.
- */
 export function compositeMasked(template, photo, transform, opts = {}) {
-  const w = TEMPLATE_WIDTH;
-  const h = TEMPLATE_HEIGHT;
+  const w = template.width || TEMPLATE_WIDTH;
+  const h = template.height || TEMPLATE_HEIGHT;
   const out = document.createElement('canvas');
   out.width = w;
   out.height = h;
@@ -101,10 +75,6 @@ export function compositeMasked(template, photo, transform, opts = {}) {
   return pixels;
 }
 
-/**
- * @param {ImageData} imageData
- * @returns {Promise<Blob>}
- */
 export async function imageDataToPngBlob(imageData) {
   const c = document.createElement('canvas');
   c.width = imageData.width;
@@ -113,10 +83,6 @@ export async function imageDataToPngBlob(imageData) {
   return canvasToPngBlob(c);
 }
 
-/**
- * @param {File} file
- * @returns {Promise<HTMLImageElement>}
- */
 export function loadImageFile(file) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -134,17 +100,16 @@ export function loadImageFile(file) {
 }
 
 /**
- * Open on-page align overlay. Resolves ImageData on confirm, null on cancel.
- * Does not touch IndexedDB — caller saves.
- *
  * @param {object} opts
  * @param {ImageData} opts.template
- * @param {HTMLCanvasElement} opts.photoCanvas downscaled photo
- * @param {HTMLElement} opts.host mount point
- * @returns {Promise<ImageData|null>}
+ * @param {HTMLCanvasElement} opts.photoCanvas
+ * @param {HTMLElement} opts.host
+ * @param {string} [opts.characterLabel]
  */
-export function openAlignOverlay({template, photoCanvas, host}) {
-  const bbox = opaqueBounds(template.data, template.width, template.height);
+export function openAlignOverlay({template, photoCanvas, host, characterLabel = '影偶'}) {
+  const tw = template.width || TEMPLATE_WIDTH;
+  const th = template.height || TEMPLATE_HEIGHT;
+  const bbox = opaqueBounds(template.data, tw, th);
   if (!bbox) return Promise.resolve(null);
 
   let transform = coverFitTransform(photoCanvas.width, photoCanvas.height, bbox);
@@ -157,10 +122,10 @@ export function openAlignOverlay({template, photoCanvas, host}) {
     <div class="photo-align-sheet">
       <header class="photo-align-head">
         <strong>對齊紙稿</strong>
-        <span>拖移・放大縮小・旋轉，對準悟空輪廓</span>
+        <span>拖移・放大縮小・旋轉，對準${characterLabel}輪廓</span>
       </header>
       <div class="photo-align-stage" id="photoAlignStage">
-        <canvas id="photoAlignCanvas" width="${TEMPLATE_WIDTH}" height="${TEMPLATE_HEIGHT}"></canvas>
+        <canvas id="photoAlignCanvas" width="${tw}" height="${th}"></canvas>
       </div>
       <div class="photo-align-tools">
         <button type="button" data-act="zoomOut" aria-label="縮小">－</button>
@@ -171,7 +136,7 @@ export function openAlignOverlay({template, photoCanvas, host}) {
         <button type="button" data-act="cancel">取消</button>
         <button type="button" class="photo-align-confirm" data-act="confirm">確認入偶</button>
       </div>
-      <p class="photo-align-hint">影完紙稿會套入悟空輪廓；確認後可再畫筆修改</p>
+      <p class="photo-align-hint">影完紙稿會套入${characterLabel}輪廓；確認後可再畫筆修改</p>
     </div>
   `;
   host.append(overlay);
@@ -180,13 +145,12 @@ export function openAlignOverlay({template, photoCanvas, host}) {
   const ctx = canvas.getContext('2d');
   const stage = overlay.querySelector('#photoAlignStage');
 
-  // Soft silhouette overlay from template alpha
   const silhouette = document.createElement('canvas');
-  silhouette.width = TEMPLATE_WIDTH;
-  silhouette.height = TEMPLATE_HEIGHT;
+  silhouette.width = tw;
+  silhouette.height = th;
   const sctx = silhouette.getContext('2d');
-  const sData = sctx.createImageData(TEMPLATE_WIDTH, TEMPLATE_HEIGHT);
-  for (let i = 0, p = 0; i < TEMPLATE_WIDTH * TEMPLATE_HEIGHT; i++, p += 4) {
+  const sData = sctx.createImageData(tw, th);
+  for (let i = 0, p = 0; i < tw * th; i++, p += 4) {
     const a = template.data[p + 3];
     if (a < ALPHA_MIN) continue;
     const luma = 0.299 * template.data[p] + 0.587 * template.data[p + 1] + 0.114 * template.data[p + 2];
@@ -204,15 +168,15 @@ export function openAlignOverlay({template, photoCanvas, host}) {
 
   function fitCanvas() {
     const r = stage.getBoundingClientRect();
-    const scale = Math.min((r.width - 8) / TEMPLATE_WIDTH, (r.height - 8) / TEMPLATE_HEIGHT);
-    canvas.style.width = Math.max(1, TEMPLATE_WIDTH * scale) + 'px';
-    canvas.style.height = Math.max(1, TEMPLATE_HEIGHT * scale) + 'px';
+    const scale = Math.min((r.width - 8) / tw, (r.height - 8) / th);
+    canvas.style.width = Math.max(1, tw * scale) + 'px';
+    canvas.style.height = Math.max(1, th * scale) + 'px';
   }
 
   function paint() {
-    ctx.clearRect(0, 0, TEMPLATE_WIDTH, TEMPLATE_HEIGHT);
+    ctx.clearRect(0, 0, tw, th);
     ctx.fillStyle = '#efeae1';
-    ctx.fillRect(0, 0, TEMPLATE_WIDTH, TEMPLATE_HEIGHT);
+    ctx.fillRect(0, 0, tw, th);
     drawPhotoTransformed(ctx, photoCanvas, transform);
     ctx.drawImage(silhouette, 0, 0);
   }
@@ -220,8 +184,8 @@ export function openAlignOverlay({template, photoCanvas, host}) {
   function canvasPoint(ev) {
     const r = canvas.getBoundingClientRect();
     return {
-      x: ((ev.clientX - r.left) * TEMPLATE_WIDTH) / r.width,
-      y: ((ev.clientY - r.top) * TEMPLATE_HEIGHT) / r.height,
+      x: ((ev.clientX - r.left) * tw) / r.width,
+      y: ((ev.clientY - r.top) * th) / r.height,
     };
   }
 
@@ -256,7 +220,6 @@ export function openAlignOverlay({template, photoCanvas, host}) {
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
-  // Pinch zoom (two touches on stage)
   stage.addEventListener(
     'touchstart',
     (ev) => {

@@ -321,3 +321,72 @@ test("photo cover-fit and silhouette mask", () => {
   assert.equal(masked[4], 200); // interior keeps photo color
   assert.equal(masked[7], 255);
 });
+
+import {
+  listCharacters,
+  getCharacter,
+  getCharacterByAssetVersion,
+  isProfileAssetVersion,
+  defaultCharacter,
+} from "../src/characters.js";
+
+test("character registry has five profile roles with required fields", () => {
+  const list = listCharacters();
+  assert.equal(list.length, 5);
+  assert.equal(defaultCharacter().id, "wukong-v2");
+  for (const id of ["wukong-v2", "tangseng-v1", "bajie-v1", "sha-v1", "baima-v1"]) {
+    const ch = getCharacter(id);
+    assert.ok(ch, id);
+    assert.ok(ch.labelZh);
+    assert.ok(ch.assetVersion);
+    assert.ok(ch.templateUrl.includes(id) || id === "wukong-v2");
+    assert.ok(ch.lineArtUrl || ch.printUrl);
+    assert.ok(ch.rodPreset === "humanoid" || ch.rodPreset === "horse");
+    assert.equal(ch.width, 640);
+    assert.equal(ch.height, 960);
+    assert.equal(getCharacterByAssetVersion(ch.assetVersion)?.id, id);
+    assert.equal(isProfileAssetVersion(ch.assetVersion), true);
+  }
+  assert.equal(getCharacter("baima-v1").rodPreset, "horse");
+  assert.equal(isProfileAssetVersion("nope"), false);
+});
+
+test("switching project characterId does not wipe other character whole blobs", async () => {
+  await archiveAndStart("wukong-v2");
+  await saveColoredPart("wukong-v2", "whole", new Blob(["wukong-paint"]));
+  await saveColoredPart("tangseng-v1", "whole", new Blob(["monk-paint"]));
+  await updateProject({
+    characterId: "tangseng-v1",
+    assetVersion: "tangseng-profile-v1",
+    coloredPartIds: [],
+    poses: [null, null, null],
+  });
+  assert.equal((await readProject()).characterId, "tangseng-v1");
+  assert.equal(await (await loadColoredPart("wukong-v2", "whole")).text(), "wukong-paint");
+  assert.equal(await (await loadColoredPart("tangseng-v1", "whole")).text(), "monk-paint");
+  await archiveAndStart("bajie-v1");
+  // tangseng was current — its whole archived/removed; wukong untouched
+  assert.equal(await loadColoredPart("tangseng-v1", "whole"), null);
+  assert.equal(await (await loadColoredPart("wukong-v2", "whole")).text(), "wukong-paint");
+  assert.equal((await readProject()).characterId, "bajie-v1");
+});
+
+test("mask helper keeps outline and clears outside for any template size", () => {
+  const template = new Uint8ClampedArray([
+    0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 255,
+    0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0,
+  ]);
+  const photo = new Uint8ClampedArray(template.length);
+  for (let i = 0; i < photo.length; i += 4) {
+    photo[i] = 12;
+    photo[i + 1] = 34;
+    photo[i + 2] = 56;
+    photo[i + 3] = 255;
+  }
+  const kept = maskToTemplateAlpha(photo, template, 3, 2, true);
+  assert.ok(kept >= 2);
+  assert.equal(photo[3], 0);
+  assert.equal(photo[8], 0);
+  assert.equal(photo[11], 255);
+  assert.equal(photo[4], 12);
+});

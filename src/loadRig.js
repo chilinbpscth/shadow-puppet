@@ -1,21 +1,10 @@
 import {readProject} from './projectStorage.js';
 import {loadProfileRig} from './profileRig.js';
-/**
- * Load character rig.json and part PNG images.
- * Optionally overlay student-colored parts from IndexedDB.
- */
-
-import {
-  loadAllColoredParts,
-  blobToImage,
-} from './colorStorage.js';
+import {isProfileAssetVersion, getCharacter} from './characters.js';
+import {loadAllColoredParts, blobToImage} from './colorStorage.js';
 
 const RIG_URL = './characters/wukong/rig.json';
 
-/**
- * @param {string} src
- * @returns {Promise<HTMLImageElement>}
- */
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -27,29 +16,26 @@ function loadImage(src) {
 
 /**
  * @param {string} [rigUrl]
- * @param {{ applyColored?: boolean }} [opts]
- * @returns {Promise<{
- *   rig: object,
- *   images: Map<string, HTMLImageElement>,
- *   coloredPartIds: string[],
- *   hasColored: boolean,
- * }>}
+ * @param {{ applyColored?: boolean, characterId?: string }} [opts]
  */
 export async function loadRig(rigUrl, opts = {}) {
   const applyColored = opts.applyColored !== false;
   if (!rigUrl) {
     const project = await readProject();
-    if (project?.assetVersion === 'wukong-profile-v2') return loadProfileRig(applyColored);
+    if (project && isProfileAssetVersion(project.assetVersion)) {
+      return loadProfileRig(applyColored, project.characterId || getCharacterByHint(project));
+    }
+    if (project?.characterId && getCharacter(project.characterId)) {
+      return loadProfileRig(applyColored, project.characterId);
+    }
     if (!project) {
       const legacy = await loadRig(RIG_URL, opts);
-      return legacy.hasColored ? legacy : loadProfileRig(applyColored);
+      return legacy.hasColored ? legacy : loadProfileRig(applyColored, 'wukong-v2');
     }
     rigUrl = RIG_URL;
   }
   const res = await fetch(rigUrl);
-  if (!res.ok) {
-    throw new Error(`無法載入 rig：${res.status} ${rigUrl}`);
-  }
+  if (!res.ok) throw new Error(`無法載入 rig：${res.status} ${rigUrl}`);
   const rig = await res.json();
   const base = rigUrl.replace(/[^/]+$/, '');
   const images = new Map();
@@ -64,7 +50,6 @@ export async function loadRig(rigUrl, opts = {}) {
     }),
   );
 
-  /** @type {string[]} */
   let coloredPartIds = [];
   if (applyColored) {
     try {
@@ -82,10 +67,9 @@ export async function loadRig(rigUrl, opts = {}) {
     }
   }
 
-  return {
-    rig,
-    images,
-    coloredPartIds,
-    hasColored: coloredPartIds.length > 0,
-  };
+  return {rig, images, coloredPartIds, hasColored: coloredPartIds.length > 0};
+}
+
+function getCharacterByHint(project) {
+  return project?.characterId || 'wukong-v2';
 }

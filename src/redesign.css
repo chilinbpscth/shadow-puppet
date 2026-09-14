@@ -672,3 +672,52 @@ dialog::backdrop {
 @media(max-width:600px){
   .photo-align-tools button{padding:8px 10px;font-size:12px}
 }
+
+/* P1 multi-character picker */
+.char-pick-label {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.95rem;
+  color: #5c564c;
+}
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 1rem;
+  max-width: 520px;
+}
+.char-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 2px solid #dcd4c4;
+  border-radius: 12px;
+  background: #fbf8f2;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  min-height: 44px;
+}
+.char-card img {
+  width: 56px;
+  height: 84px;
+  object-fit: contain;
+  background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 50% / 12px 12px;
+  border-radius: 6px;
+}
+.char-card strong {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.char-card.is-selected {
+  border-color: #bc3532;
+  box-shadow: 0 0 0 2px rgba(188, 53, 50, 0.25);
+  background: #fff8f6;
+}
+@media (max-width: 560px) {
+  .char-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

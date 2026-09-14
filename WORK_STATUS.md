@@ -65,3 +65,14 @@ facing 串接關節解算、手腕拖動、圖像鏡像、clone／apply、相對
 必讀 [LESSONS.md](LESSONS.md)，先按完整學生體驗接續，勿把舊預覽當成已獲接受的成品。主流程改寫已開始但尚未完成；wholeColor.js 尚未建立，當前工作樹不可部署。此前 8 項測試與 build 通過只適用於 2dd9e18 階段，不適用於後續未完成修改。
 
 本次依使用者要求把工作教訓另寫入本機長期記憶更新筆記；未聲稱已同步至其他 Mac。
+
+## P1a 多角色（2026-09-14）
+
+依 `ceate-arts/皮影戲/MULTI-CHAR-P1.md`：
+
+- Registry：`src/characters.js`（悟空／唐僧／八戒／沙僧／白馬）
+- Template 640×960 + A4：`public/characters/<id>/template.png`、`public/print/<id>-profile-line-a4.svg`
+- 填色／影相：`[characterId,'whole']`；首頁揀角寫 `projects.current.characterId`
+- **Rig 選擇（P1a）：** 悟空維持 articulated regions＋三棍；新四角用 `rigMode:'whole'`（整隻剪影＋身棍平移）。人形三棍／白馬頭頸棍屬 **P1b**。
+- 換角：封存只帶走當前角顏色，唔刪其他角 `coloredParts`。本地改動，**未 push**。
+

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="960" viewBox="0 0 640 960">
+  <g fill="#ffffff" stroke="#000000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+
+    <!-- body -->
+    <ellipse cx="330" cy="480" rx="175" ry="95"/>
+    <!-- neck -->
+    <path d="M450,430 C500,380 520,300 500,240 L460,230 C470,300 450,370 410,420 Z"/>
+    <!-- head -->
+    <ellipse cx="520" cy="210" rx="70" ry="42"/>
+    <!-- ear -->
+    <path d="M500,175 L495,130 L525,165 Z"/>
+    <!-- muzzle -->
+    <ellipse cx="585" cy="220" rx="28" ry="20"/>
+    <!-- eye -->
+    <circle cx="535" cy="200" r="6" fill="#000" stroke="none"/>
+    <!-- mane -->
+    <path d="M470,240 C450,200 430,280 445,320 C420,300 400,350 420,380" fill="none" stroke-width="5"/>
+    <!-- forelegs -->
+    <path d="M420,550 L440,780 L480,785 L470,555 Z"/>
+    <path d="M380,560 L370,790 L410,795 L415,560 Z"/>
+    <!-- hindlegs -->
+    <path d="M220,540 L200,790 L245,795 L265,545 Z"/>
+    <path d="M270,550 L280,785 L320,790 L310,555 Z"/>
+    <!-- hooves -->
+    <ellipse cx="460" cy="800" rx="28" ry="14"/>
+    <ellipse cx="390" cy="805" rx="26" ry="12"/>
+    <ellipse cx="220" cy="805" rx="28" ry="14"/>
+    <ellipse cx="300" cy="800" rx="26" ry="12"/>
+    <!-- tail -->
+    <path d="M160,450 C80,480 70,600 120,680 C90,620 100,520 160,480 Z"/>
+    <!-- saddle hint (blank for coloring) -->
+    <path d="M280,420 L380,415 L390,470 L270,475 Z" fill="none" stroke-width="3"/>
+    <circle cx="480" cy="300" r="9" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="330" cy="480" r="9" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="450" cy="555" r="9" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="390" cy="560" r="9" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="240" cy="545" r="9" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="290" cy="555" r="9" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="160" cy="470" r="9" fill="#fff" stroke="#000" stroke-width="3"/>
+<circle cx="520" cy="210" r="9" fill="#fff" stroke="#000" stroke-width="3"/>
+    
+  </g>
+</svg>

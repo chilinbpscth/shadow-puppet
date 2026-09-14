@@ -4,6 +4,8 @@
  * Key: [characterId, partId] · value: { characterId, partId, pngBlob, updatedAt }
  */
 
+import {getCharacter} from './characters.js';
+
 const DB_NAME = 'shadow-puppet';
 const DB_VERSION = 2;
 const STORE = 'coloredParts';
@@ -51,7 +53,10 @@ export async function saveColoredPart(characterId, partId, pngBlob) {
     const projects = tx.objectStore('projects');
     const req = projects.get('current');
     req.onsuccess = () => {
-      const project = req.result || {id:'current',schemaVersion:1,assetVersion:characterId==='wukong-v2'?'wukong-profile-v2':'wukong-legacy-v1',characterId,title:'我的西遊記',poses:[null,null,null],coloredPartIds:[]};
+      const ch = getCharacter(characterId);
+      const fallbackAv = ch ? ch.assetVersion : (characterId === 'wukong' ? 'wukong-legacy-v1' : 'wukong-profile-v2');
+      const project = req.result || {id:'current',schemaVersion:1,assetVersion:fallbackAv,characterId,title:'我的西遊記',poses:[null,null,null],coloredPartIds:[]};
+      if (ch && project.characterId === characterId) project.assetVersion = project.assetVersion || ch.assetVersion;
       project.coloredPartIds = [...new Set([...project.coloredPartIds, partId])];
       project.updatedAt = Date.now();
       projects.put(project);

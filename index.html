@@ -13,22 +13,24 @@
       </div>
       <p class="eyebrow">畫身段・操影偶・說故事</p>
       <h2>畫一隻影偶，演一段西遊</h2>
-      <p class="intro">由你的色彩，到悟空的每一個動作。</p>
+      <p class="intro">揀一隻影偶去畫，由你的色彩到舞台動作。</p>
+      <p class="char-pick-label" id="charPickLabel">揀一隻影偶去畫</p>
+      <div class="char-grid" id="charGrid" role="listbox" aria-labelledby="charPickLabel"></div>
       <div class="home-cards">
-        <button id="start">
+        <button id="start" disabled>
           <span class="card-icon">✎</span><strong>開始創作</strong
-          ><span>親手畫悟空，再編排三格故事</span></button
+          ><span id="startHint">先揀角色，再親手畫</span></button
         ><a id="continue" href="./color.html" hidden
           ><span class="card-icon">▷</span><strong>繼續作品</strong
-          ><span>接住這部裝置的創作</span></a
+          ><span id="continueHint">接住這部裝置的創作</span></a
         >
       </div>
       <p id="homeStatus" role="status">作品保存在這個瀏覽器，不用登入。</p>
-      <p class="preview-note">完整側身悟空・直接填畫，畫完就上幕</p>
+      <p class="preview-note">完整側身影偶・直接填畫，畫完就上幕</p>
       <p class="preview-note"><a href="./print.html">下載／列印線稿</a>　·　畫頁可「影相入偶」</p>
       <dialog id="newDialog">
         <h2>保留舊作品，再開始</h2>
-        <p>舊填色與故事會封存，仍可還原。你亦可以先下載影偶。</p>
+        <p>舊填色與故事會封存，仍可還原。你亦可以先下載影偶。換角色唔會刪其他角色已存填色。</p>
         <button id="oldDownload">下載舊影偶 PNG</button
         ><button id="archiveStart">封存並開始</button
         ><button id="cancelNew">返回</button>

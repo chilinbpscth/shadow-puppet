@@ -915,7 +915,8 @@ async function init() {
     if(project){document.getElementById('workTitle').value=project.title;
       project.poses.forEach((p,i)=>{savedPoses[i]=p?decodePose(p,canvas.width,canvas.height):null;});}
     if (state.rig.profile) {
-      document.querySelector('.preview-note').textContent = '完整側身悟空・你的色彩會跟住影偶一起動';
+      const name = state.rig.labelZh || '影偶';
+      document.querySelector('.preview-note').textContent = `完整側身${name}・你的色彩會跟住影偶一起動`;
       modeBody.disabled = true;
       document.getElementById('labBody').textContent = '身體驅動（此造型暫未開放，先用棍控）';
     }
@@ -940,7 +941,7 @@ async function init() {
     updateColorNotice(!!state.hasColored);
     setMode('manual');
     setControlMode('rods');
-    setStatus(state.hasColored ? '你的悟空已上幕，可以開始編故事。' : '悟空已準備好，可先填色或直接操偶。');
+    setStatus(state.hasColored ? `你的${state.rig.labelZh || '影偶'}已上幕，可以開始編故事。` : `${state.rig.labelZh || '影偶'}已準備好，可先填色或直接操偶。`);
   } catch (err) {
     console.error(err);
     setStatus(err?.message || String(err), true);
