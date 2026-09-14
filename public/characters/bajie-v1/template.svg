@@ -1,43 +1,153 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="640" height="960" viewBox="0 0 640 960">
-  <g fill="#ffffff" stroke="#000000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
 
-    <!-- pig head -->
-    <ellipse cx="380" cy="200" rx="70" ry="62"/>
-    <!-- snout facing right -->
-    <ellipse cx="455" cy="215" rx="38" ry="28"/>
-    <ellipse cx="480" cy="208" rx="8" ry="10"/>
-    <ellipse cx="480" cy="225" rx="8" ry="10"/>
-    <!-- ears -->
-    <path d="M330,150 L300,80 L360,130 Z"/>
-    <path d="M400,145 L430,70 L450,140 Z"/>
-    <!-- neck -->
-    <rect x="350" y="255" width="50" height="30" rx="8"/>
-    <!-- big belly torso -->
-    <path d="M250,280 L420,275 L460,480 L400,560 L240,540 L220,380 Z"/>
-    <!-- arms -->
-    <path d="M250,310 L180,400 L160,520 L200,530 L240,410 L280,330 Z"/>
-    <path d="M420,300 L500,350 L560,420 L530,450 L450,370 L425,320 Z"/>
-    <!-- rake (九齿钉耙) held front -->
-    <path d="M540,200 L555,200 L555,460 L540,460 Z" fill="#fff"/>
-    <path d="M520,200 L575,200 L575,230 L520,230 Z"/>
-    <path d="M525,195 L530,170 M540,195 L545,165 M555,195 L560,170 M565,195 L570,165" fill="none"/>
-    <!-- legs -->
-    <path d="M280,540 L260,800 L310,810 L340,555 Z"/>
-    <path d="M380,550 L400,800 L460,805 L430,555 Z"/>
-    <ellipse cx="280" cy="820" rx="40" ry="18"/>
-    <ellipse cx="440" cy="820" rx="40" ry="18"/>
-    <!-- short tail curl -->
-    <path d="M230,480 C180,470 170,520 200,540" fill="none" stroke-width="6"/>
-    <circle cx="380" cy="260" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-<circle cx="230" cy="330" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-<circle cx="185" cy="450" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-<circle cx="450" cy="320" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-<circle cx="530" cy="390" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-<circle cx="310" cy="560" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-<circle cx="400" cy="560" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-<circle cx="285" cy="800" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-<circle cx="430" cy="800" r="10" fill="#fff" stroke="#000" stroke-width="3"/>
-    
+  <defs>
+    <style><![CDATA[
+      .f { fill:#ffffff; stroke:#000000; stroke-width:5; stroke-linejoin:round; stroke-linecap:round; }
+      .fd { fill:none; stroke:#000; stroke-width:3.1; stroke-linejoin:round; stroke-linecap:round; }
+      .th { fill:none; stroke:#000; stroke-width:2.3; stroke-linejoin:round; stroke-linecap:round; }
+      .mt { fill:none; stroke:#000; stroke-width:2.7; stroke-linejoin:round; stroke-linecap:round; }
+    ]]></style>
+  </defs>
+<g transform="translate(5,15) scale(0.96)">
+<g class="f">
+  <!-- ears floppy -->
+  <path d="M315,160 C280,85 240,60 235,95 C248,140 290,160 320,172 Z"/>
+  <path d="M415,155 C455,70 505,55 510,95 C490,140 450,160 420,168 Z"/>
+  <path class="fd" d="M295,125 Q275,100 255,95"/>
+  <path class="fd" d="M440,120 Q465,95 485,92"/>
+  <path class="fd" d="M300,145 Q285,125 270,120"/>
+
+  <!-- head -->
+  <path d="M310,155 C320,120 355,105 395,110 C435,115 460,145 458,185
+           C456,220 435,250 400,258 C360,268 320,255 305,225 C292,195 298,170 310,155 Z"/>
+  <!-- snout -->
+  <path d="M440,185 C470,175 510,185 520,210 C528,232 515,255 485,258 C460,260 445,245 440,220 Z"/>
+  <ellipse cx="505" cy="200" rx="9" ry="13"/>
+  <ellipse cx="508" cy="228" rx="9" ry="13"/>
+  <ellipse cx="505" cy="200" rx="3" ry="4.5" fill="#000" stroke="none"/>
+  <ellipse cx="508" cy="228" rx="3" ry="4.5" fill="#000" stroke="none"/>
+  <ellipse cx="400" cy="175" rx="7" ry="5.5" fill="#000" stroke="none"/>
+  <path class="th" d="M382,160 Q400,152 418,162"/>
+  <path class="fd" d="M425,215 Q450,235 475,225"/>
+  <path class="th" d="M455,248 Q480,258 505,248"/>
+  <!-- headband -->
+  <path d="M305,158 Q380,135 455,160 L450,182 Q380,162 310,182 Z"/>
+  <path class="fd" d="M315,168 Q380,150 445,168"/>
+  <path transform="translate(380,155) scale(0.55)" fill="none" stroke="#000" stroke-width="2.6"
+      d="M0,12 C-14,12 -16,-6 -4,-10 C6,-12 12,-2 8,5 C5,10 -2,8 0,2"/>
+  <!-- cheek plump -->
+  <path class="fd" d="M350,210 Q370,230 395,215"/>
+
+  <!-- neck -->
+  <path d="M340,255 L415,255 L425,295 L330,295 Z"/>
+
+  <!-- stout belly torso -->
+  <path d="M230,290 C275,268 360,262 440,275 L485,315 L500,485 L455,580 L325,605 L220,570 L200,420 L215,325 Z"/>
+  <path class="fd" d="M245,350 Q320,430 255,530"/>
+  <path class="fd" d="M440,345 Q485,430 460,535"/>
+  <path class="fd" d="M250,300 Q350,335 450,305"/>
+  <path class="fd" d="M280,400 Q350,450 420,410"/>
+  <!-- belly button hint fold -->
+  <path class="th" d="M340,440 Q360,455 380,440"/>
+  <!-- belt -->
+  <path d="M235,475 L480,462 L488,505 L228,518 Z"/>
+  <circle cx="360" cy="490" r="20"/>
+  <circle cx="360" cy="490" r="9"/>
+  <path class="fd" d="M240,490 L340,482 M380,480 L478,472"/>
+  <g transform="translate(310,370) scale(0.85)" fill="none" stroke="#000" stroke-width="2.8" stroke-linejoin="round">
+      <path d="M-20,6 C-26,-8 -12,-18 0,-10 C6,-22 24,-16 22,0 C34,2 30,16 16,14 C10,24 -8,22 -12,10 C-24,16 -26,8 -20,6 Z"/>
+      <path d="M-4,-2 Q4,-10 10,-2" stroke-width="2"/>
+    </g>
+  <g transform="translate(420,390) scale(0.7)" fill="none" stroke="#000" stroke-width="2.8" stroke-linejoin="round">
+      <path d="M-20,6 C-26,-8 -12,-18 0,-10 C6,-22 24,-16 22,0 C34,2 30,16 16,14 C10,24 -8,22 -12,10 C-24,16 -26,8 -20,6 Z"/>
+      <path d="M-4,-2 Q4,-10 10,-2" stroke-width="2"/>
+    </g>
+  <path transform="translate(280,540) scale(0.75)" fill="none" stroke="#000" stroke-width="2.6"
+      d="M0,12 C-14,12 -16,-6 -4,-10 C6,-12 12,-2 8,5 C5,10 -2,8 0,2"/>
+  <g transform="translate(400,540) scale(0.55)" fill="none" stroke="#000" stroke-width="2.8" stroke-linejoin="round">
+      <path d="M-20,6 C-26,-8 -12,-18 0,-10 C6,-22 24,-16 22,0 C34,2 30,16 16,14 C10,24 -8,22 -12,10 C-24,16 -26,8 -20,6 Z"/>
+      <path d="M-4,-2 Q4,-10 10,-2" stroke-width="2"/>
+    </g>
+  <!-- robe hem scallops -->
+  <path class="fd" d="M230,568 Q280,590 330,575 Q380,595 430,578 Q470,590 490,570"/>
+
+  <!-- left arm -->
+  <path d="M230,315 C188,350 155,415 148,480 C140,535 150,575 178,588 L220,575 C208,530 215,475 242,425 C258,385 270,345 282,322 Z"/>
+  <path class="fd" d="M160,570 Q190,552 218,568"/>
+  <path class="fd" d="M175,410 Q205,445 195,485"/>
+  <g transform="translate(185,450) scale(0.45)" fill="none" stroke="#000" stroke-width="2.8" stroke-linejoin="round">
+      <path d="M-20,6 C-26,-8 -12,-18 0,-10 C6,-22 24,-16 22,0 C34,2 30,16 16,14 C10,24 -8,22 -12,10 C-24,16 -26,8 -20,6 Z"/>
+      <path d="M-4,-2 Q4,-10 10,-2" stroke-width="2"/>
+    </g>
+  <ellipse cx="185" cy="598" rx="27" ry="16"/>
+  <path class="th" d="M170,594 L165,608 M185,590 L185,610 M200,594 L205,608"/>
+
+  <!-- right arm -->
+  <path d="M440,300 C492,318 545,360 568,420 C588,475 585,525 568,550 L525,555 C538,500 525,455 492,405 C468,360 450,325 440,310 Z"/>
+  <path class="fd" d="M545,535 Q562,518 568,540"/>
+  <path class="fd" d="M500,360 Q530,395 520,440"/>
+  <g transform="translate(530,410) scale(0.55)" fill="none" stroke="#000" stroke-width="2.8" stroke-linejoin="round">
+      <path d="M-20,6 C-26,-8 -12,-18 0,-10 C6,-22 24,-16 22,0 C34,2 30,16 16,14 C10,24 -8,22 -12,10 C-24,16 -26,8 -20,6 Z"/>
+      <path d="M-4,-2 Q4,-10 10,-2" stroke-width="2"/>
+    </g>
+  <ellipse cx="548" cy="568" rx="25" ry="15"/>
+
+  <!-- nine-tooth rake -->
+  <g fill="#fff" stroke="#000" stroke-width="4" stroke-linejoin="round">
+    <path d="M555,115 L576,115 L576,575 L555,575 Z"/>
+    <rect x="548" y="205" width="35" height="14" rx="2"/>
+    <rect x="548" y="350" width="35" height="10" rx="2"/>
+    <rect x="548" y="490" width="35" height="14" rx="2"/>
+    <!-- rake head -->
+    <path d="M518,95 L602,95 L608,148 L512,148 Z"/>
+    <!-- teeth (9 stylized) -->
+    <path d="M522,95 L518,42 L530,42 L534,95 Z"/>
+    <path d="M536,95 L533,35 L545,35 L548,95 Z"/>
+    <path d="M550,95 L548,28 L560,28 L562,95 Z"/>
+    <path d="M564,95 L563,28 L575,28 L576,95 Z"/>
+    <path d="M578,95 L578,35 L590,35 L589,95 Z"/>
+    <path d="M592,95 L594,42 L605,42 L600,95 Z"/>
+    <!-- side crescent hooks -->
+    <path d="M518,108 C492,98 485,130 508,138 L518,128 Z"/>
+    <path d="M602,108 C628,98 635,130 612,138 L602,128 Z"/>
+    <!-- ornament on head -->
+    <circle cx="560" cy="120" r="8"/>
   </g>
+  <path class="mt" d="M545,118 Q560,108 575,118"/>
+
+  <!-- legs stout -->
+  <path d="M265,580 L245,750 L235,828 L295,838 L318,758 L345,595 Z"/>
+  <path d="M395,585 L412,755 L428,832 L485,838 L472,755 L450,590 Z"/>
+  <path class="fd" d="M255,735 Q285,752 312,738"/>
+  <path class="fd" d="M415,745 Q450,762 470,748"/>
+  <path class="fd" d="M275,640 Q300,660 320,645"/>
+  <path class="fd" d="M415,650 Q445,670 465,652"/>
+
+  <!-- boots -->
+  <path d="M225,828 C218,855 255,872 298,865 C322,860 328,842 318,832 Z"/>
+  <path d="M420,832 C412,860 455,878 495,868 C515,862 512,842 502,832 Z"/>
+  <path class="fd" d="M235,845 Q270,858 305,845"/>
+  <path class="fd" d="M430,850 Q465,865 498,848"/>
+  <path transform="translate(268,848) scale(0.5)" fill="none" stroke="#000" stroke-width="2.6"
+      d="M0,12 C-14,12 -16,-6 -4,-10 C6,-12 12,-2 8,5 C5,10 -2,8 0,2"/>
+  <path transform="translate(460,850) scale(0.5)" fill="none" stroke="#000" stroke-width="2.6"
+      d="M0,12 C-14,12 -16,-6 -4,-10 C6,-12 12,-2 8,5 C5,10 -2,8 0,2"/>
+
+  <!-- curly tail -->
+  <path d="M218,505 C155,490 125,545 165,585 C140,560 155,510 205,508"
+        fill="none" stroke="#000" stroke-width="7.5" stroke-linecap="round"/>
+  <circle cx="170" cy="575" r="13"/>
+  <path class="fd" d="M162,570 Q170,562 178,570"/>
+</g>
+<g><circle cx="372" cy="275" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="372" cy="275" r="4.5" fill="#000"/>
+<circle cx="232" cy="340" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="232" cy="340" r="4.5" fill="#000"/>
+<circle cx="175" cy="475" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="175" cy="475" r="4.5" fill="#000"/>
+<circle cx="475" cy="330" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="475" cy="330" r="4.5" fill="#000"/>
+<circle cx="550" cy="415" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="550" cy="415" r="4.5" fill="#000"/>
+<circle cx="298" cy="580" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="298" cy="580" r="4.5" fill="#000"/>
+<circle cx="415" cy="580" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="415" cy="580" r="4.5" fill="#000"/>
+<circle cx="272" cy="820" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="272" cy="820" r="4.5" fill="#000"/>
+<circle cx="448" cy="820" r="13" fill="#fff" stroke="#000" stroke-width="3.2"/><circle cx="448" cy="820" r="4.5" fill="#000"/></g>
+</g>
 </svg>
