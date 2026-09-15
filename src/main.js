@@ -136,7 +136,12 @@ function fillPartList(rig) {
 function updateMissionUI() {
   document.getElementById('btnDownload').disabled = savedPoses.some(p => !p);
   const m = MISSIONS[missionIndex];
-  taskMain.textContent = ['慢慢拖身棍，帶悟空出發；提一提，試吓腳步變化。','撥動轉棍換方向，再用手棍演出遇險。','提起持棒手棍，向前推或畫弧，試吓揮棒。'][missionIndex];
+  const who = state?.rig?.labelZh || '影偶';
+  taskMain.textContent = [
+    `慢慢拖身棍，帶${who}出發；提一提，試吓移動。`,
+    `撥動轉棍換方向，用棍帶${who}演出遇險。`,
+    `提起手棍向前推或畫弧，試吓動作（有棒角色可揮棒）。`,
+  ][missionIndex];
   const tipEl = document.getElementById('artTip');
   if (tipEl) tipEl.textContent = m.tip;
   for (const card of missionCardsEl.querySelectorAll('.mission-card')) {
@@ -898,7 +903,7 @@ function updateColorNotice(hasColored) {
   } else {
     notice.classList.remove('has-colored');
     textEl.textContent =
-      '\u9084\u6c92\u6709\u586b\u8272\u4f5c\u54c1 \u2014 \u5148\u70ba\u5b6b\u609f\u7a7a\u7684\u8eab\u6bb5\u586b\u8272\uff0c\u518d\u56de\u4f86\u64fa\u59ff\u52e2\u3002';
+      `\u9084\u6c92\u6709\u586b\u8272\u4f5c\u54c1 \u2014 \u5148\u70ba${state?.rig?.labelZh || '\u5f71\u5076'}\u586b\u8272\uff0c\u518d\u56de\u4f86\u64fa\u59ff\u52e2\u3002`;
     const go = document.createElement('a');
     go.href = `./color.html?char=${encodeURIComponent(state?.rig?.id || '')}`;
     go.className = 'btn-inline';
