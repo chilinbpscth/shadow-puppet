@@ -23,6 +23,21 @@ const run = (fn) => async () => {
 let existing = false;
 let selectedId = defaultCharacter().id;
 
+function syncPipelineLinks(ch) {
+  const label = ch?.labelZh || '影偶';
+  const id = ch?.id || selectedId;
+  const color = document.getElementById('goColor');
+  const print = document.getElementById('goPrint');
+  const hint = document.getElementById('colorHint');
+  const startHint = document.getElementById('startHint');
+  if (color) color.href = `./color.html?char=${encodeURIComponent(id)}`;
+  if (print) print.href = `./print.html?char=${encodeURIComponent(id)}`;
+  if (hint) hint.textContent = `畫／影相入${label}`;
+  if (startHint) startHint.textContent = `① 畫${label} → ② 舞台 → ③ live`;
+  document.getElementById('startHint').textContent = `① 畫${label} → ② 舞台 → ③ live`;
+}
+
+
 function renderCharGrid() {
   const grid = document.getElementById('charGrid');
   grid.replaceChildren();
@@ -41,7 +56,7 @@ function renderCharGrid() {
         el.classList.toggle('is-selected', on);
         el.setAttribute('aria-selected', on ? 'true' : 'false');
       }
-      document.getElementById('startHint').textContent = `畫${ch.labelZh}，再編排三格故事`;
+      syncPipelineLinks(ch);
     };
     grid.append(btn);
   }
@@ -60,7 +75,7 @@ document.getElementById('start').onclick = run(async () => {
       coloredPartIds: [],
       poses: [null, null, null],
     });
-    location.href = './color.html';
+    location.href = `./color.html?char=${encodeURIComponent(ch.id)}`;
   }
 });
 document.getElementById('cancelNew').onclick = () => dialog.close();
@@ -74,7 +89,7 @@ document.getElementById('archiveStart').onclick = run(async () => {
     coloredPartIds: [],
     poses: [null, null, null],
   });
-  location.href = './color.html';
+  location.href = `./color.html?char=${encodeURIComponent(ch.id)}`;
 });
 document.getElementById('oldDownload').onclick = run(async () => {
   const {rig, images} = await loadRig();
@@ -91,6 +106,7 @@ document.getElementById('oldDownload').onclick = run(async () => {
 async function init() {
   try {
     renderCharGrid();
+    syncPipelineLinks(getCharacter(selectedId) || defaultCharacter());
     let project = await readProject();
     const loaded = await loadRig();
     if (!project && loaded.hasColored)
@@ -110,8 +126,9 @@ async function init() {
       if (ch) {
         selectedId = ch.id;
         renderCharGrid();
+        syncPipelineLinks(ch);
         document.getElementById('continueHint').textContent = `繼續畫${ch.labelZh}`;
-        document.getElementById('startHint').textContent = `畫${ch.labelZh}，再編排三格故事`;
+        document.getElementById('continue').href = `./color.html?char=${encodeURIComponent(ch.id)}`;
       }
     }
     const archives = await getArchives();
@@ -120,7 +137,9 @@ async function init() {
       b.hidden = false;
       b.onclick = run(async () => {
         await restoreArchive(archives[0]);
-        location.href = './color.html';
+        const proj = await readProject();
+        const cid = proj?.characterId || selectedId;
+        location.href = `./color.html?char=${encodeURIComponent(cid)}`;
       });
     }
   } catch (e) {

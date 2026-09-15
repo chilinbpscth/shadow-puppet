@@ -1,41 +1,92 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <meta charset="utf-8" /><meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,viewport-fit=cover"
-  /><title>皮影戲・西遊記</title
-  ><link rel="stylesheet" href="/src/redesign.css" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>皮影戲・西遊記</title>
+    <link rel="stylesheet" href="/src/redesign.css" />
+  </head>
   <body class="home-page">
     <main class="home">
       <div class="brand">
         <span class="seal">影</span>
         <h1>皮影戲</h1>
       </div>
-      <p class="eyebrow">畫身段・操影偶・說故事</p>
-      <h2>畫一隻影偶，演一段西遊</h2>
-      <p class="intro">揀一隻影偶去畫，由你的色彩到舞台動作。</p>
-      <p class="char-pick-label" id="charPickLabel">揀一隻影偶去畫</p>
+      <p class="eyebrow">西遊記・課堂一條龍</p>
+      <h2>同一頁走完三步</h2>
+      <p class="intro">填色／影相 → 單機舞台練棍 → 多人 live 同台。作品保存在呢部 iPad，唔使登入。</p>
+
+      <ol class="flow-steps" aria-label="課堂流程">
+        <li class="flow-step" data-step="1">
+          <span class="flow-num">1</span>
+          <div class="flow-body">
+            <strong>填色／影相</strong>
+            <span>列印線稿、畫畫或影相入偶</span>
+          </div>
+        </li>
+        <li class="flow-step" data-step="2">
+          <span class="flow-num">2</span>
+          <div class="flow-body">
+            <strong>單機舞台</strong>
+            <span>載入你畫好嘅影偶，棍控練一練</span>
+          </div>
+        </li>
+        <li class="flow-step" data-step="3">
+          <span class="flow-num">3</span>
+          <div class="flow-body">
+            <strong>多人 live</strong>
+            <span>投影開房，兩部 iPad 遙控同台</span>
+          </div>
+        </li>
+      </ol>
+
+      <p class="char-pick-label" id="charPickLabel">① 先揀角色</p>
       <div class="char-grid" id="charGrid" role="listbox" aria-labelledby="charPickLabel"></div>
-      <div class="home-cards">
-        <button id="start" disabled>
-          <span class="card-icon">✎</span><strong>開始創作</strong
-          ><span id="startHint">先揀角色，再親手畫</span></button
-        ><a id="continue" href="./color.html" hidden
-          ><span class="card-icon">▷</span><strong>繼續作品</strong
-          ><span id="continueHint">接住這部裝置的創作</span></a
-        >
+
+      <div class="pipeline-cards" id="pipelineCards">
+        <a class="pipe-card" id="goColor" href="./color.html">
+          <span class="pipe-step">①</span>
+          <strong>填色／影相</strong>
+          <span id="colorHint">畫或影相入偶</span>
+        </a>
+        <a class="pipe-card" id="goStage" href="./stage.html">
+          <span class="pipe-step">②</span>
+          <strong>單機舞台</strong>
+          <span>載入本機作品・練棍</span>
+        </a>
+        <div class="pipe-card pipe-live">
+          <span class="pipe-step">③</span>
+          <strong>多人 live</strong>
+          <span class="pipe-live-links">
+            <a id="goLive" href="./live.html">主持／投影開房</a>
+            <a id="goPad" href="./pad.html">學生遙控</a>
+          </span>
+        </div>
       </div>
+
+      <div class="home-cards home-secondary">
+        <button id="start" type="button" disabled>
+          <span class="card-icon">✎</span><strong>由①開始創作</strong>
+          <span id="startHint">先揀角色</span>
+        </button>
+        <a id="continue" href="./color.html" hidden>
+          <span class="card-icon">▷</span><strong>繼續本機作品</strong>
+          <span id="continueHint">接住呢部裝置嘅創作</span>
+        </a>
+        <a class="btn secondary" href="./print.html" id="goPrint">列印線稿</a>
+      </div>
+
       <p id="homeStatus" role="status">作品保存在這個瀏覽器，不用登入。</p>
-      <p class="preview-note">完整側身影偶・直接填畫，畫完就上幕</p>
-      <p class="preview-note"><a href="./print.html">下載／列印線稿</a>　·　畫頁可「影相入偶」</p>
+      <p class="preview-note">② 會自動讀①嘅填色／影相；③ pad 認領後撳「推上舞台」先同步去投影。</p>
+
       <dialog id="newDialog">
         <h2>保留舊作品，再開始</h2>
         <p>舊填色與故事會封存，仍可還原。你亦可以先下載影偶。換角色唔會刪其他角色已存填色。</p>
-        <button id="oldDownload">下載舊影偶 PNG</button
-        ><button id="archiveStart">封存並開始</button
-        ><button id="cancelNew">返回</button>
+        <button id="oldDownload" type="button">下載舊影偶 PNG</button>
+        <button id="archiveStart" type="button">封存並開始</button>
+        <button id="cancelNew" type="button">返回</button>
       </dialog>
-      <button id="restore" hidden>還原上一份作品</button>
+      <button id="restore" type="button" hidden>還原上一份作品</button>
     </main>
     <script type="module" src="/src/home.js"></script>
   </body>
