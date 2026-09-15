@@ -12,13 +12,13 @@
   <div class="tool-row"><button id="brush" aria-pressed="true">畫筆</button><button id="fill" aria-pressed="false">填色</button><button id="eraser" aria-pressed="false">橡皮</button></div>
   <div class="tool-row" aria-label="筆粗"><button data-size="4">細</button><button data-size="10" aria-pressed="true">中</button><button data-size="22">大</button></div>
   <div id="wholePalette" class="palette" aria-label="色板"></div>
-  <div class="tool-row photo-entry-row">
+  <div class="tool-row photo-entry-row" aria-label="影相入偶">
     <button type="button" id="photoEntry">影相入偶</button>
+    <span id="photoChooser" class="photo-chooser" hidden>
+      <button type="button" id="photoCamera">用相機</button>
+      <button type="button" id="photoAlbum">用相簿</button>
+    </span>
     <a class="btn" id="printOutline" href="./print.html">列印線稿</a>
-  </div>
-  <div id="photoChooser" class="photo-chooser" hidden>
-    <button type="button" id="photoCamera">相機</button>
-    <button type="button" id="photoAlbum">相簿</button>
   </div>
   <input id="photoCameraInput" type="file" accept="image/*" capture="environment" hidden aria-hidden="true">
   <input id="photoAlbumInput" type="file" accept="image/*" hidden aria-hidden="true">

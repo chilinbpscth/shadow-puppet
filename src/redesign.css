@@ -833,3 +833,15 @@ dialog::backdrop {
 body.home-page{overflow:auto;height:auto;min-height:100dvh}
 .home{margin:3vh auto 4vh;text-align:center}
 .char-grid{margin-left:auto;margin-right:auto}
+
+.photo-chooser:not([hidden]) {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.whole-paper {
+  background: #efe6d6 !important;
+}
+.char-card img {
+  background: #efe6d6 !important;
+}

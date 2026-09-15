@@ -167,12 +167,12 @@ function syncChrome() {
   const refAside = document.getElementById('refAside');
   const ch = getCharacter(characterId);
   if (refImg && ch) {
+    // reference.png + .reference-crop 只適悟空；其他角唔好硬套，否則參考格錯晒
     if (ch.id === 'wukong-v2') {
       refImg.src = './characters/wukong-v2/reference.png';
       if (refAside) refAside.hidden = false;
-    } else {
-      refImg.src = ch.templateUrl;
-      if (refAside) refAside.hidden = false;
+    } else if (refAside) {
+      refAside.hidden = true;
     }
   }
   const title = document.getElementById('colorTitle');
@@ -180,7 +180,7 @@ function syncChrome() {
   const intro = document.getElementById('colorIntro');
   if (intro) intro.textContent = `在完整${characterLabel}上直接填色、畫花紋；亦可影紙稿入偶。喜歡就上幕，不用填滿。`;
   const stage = document.getElementById('enterStage');
-  if (stage) stage.textContent = `讓${characterLabel}上幕 →`;
+  if (stage) stage.textContent = `② 讓${characterLabel}上單機舞台 →`;
   const print = document.getElementById('printOutline');
   if (print) {
     const ch = getCharacter(characterId);
