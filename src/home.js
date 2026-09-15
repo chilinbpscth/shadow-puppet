@@ -30,13 +30,31 @@ function syncPipelineLinks(ch) {
   const print = document.getElementById('goPrint');
   const hint = document.getElementById('colorHint');
   const startHint = document.getElementById('startHint');
-  if (color) color.href = `./color.html?char=${encodeURIComponent(id)}`;
-  if (print) print.href = `./print.html?char=${encodeURIComponent(id)}`;
+  const q = `?char=${encodeURIComponent(id)}`;
+  if (color) color.href = `./color.html${q}`;
+  if (print) print.href = `./print.html${q}`;
   if (hint) hint.textContent = `畫／影相入${label}`;
-  if (startHint) startHint.textContent = `① 畫${label} → ② 舞台 → ③ live`;
-  document.getElementById('startHint').textContent = `① 畫${label} → ② 舞台 → ③ live`;
+  if (startHint) startHint.textContent = `① 進入畫${label}`;
+  const cont = document.getElementById('continue');
+  if (cont && !cont.hidden) cont.href = `./color.html${q}`;
 }
 
+async function rememberCharacter(ch) {
+  await updateProject({characterId: ch.id, assetVersion: ch.assetVersion});
+}
+
+/** Always enter color for selected character — do not leave user stuck on disabled start. */
+async function enterColor(ch, {forceArchive = false} = {}) {
+  const character = ch || getCharacter(selectedId) || defaultCharacter();
+  selectedId = character.id;
+  syncPipelineLinks(character);
+  status.textContent = `開緊${character.labelZh}填色…`;
+  if (forceArchive) {
+    await archiveAndStart(character.id);
+  }
+  await rememberCharacter(character);
+  location.href = `./color.html?char=${encodeURIComponent(character.id)}`;
+}
 
 function renderCharGrid() {
   const grid = document.getElementById('charGrid');
@@ -58,8 +76,8 @@ function renderCharGrid() {
       }
       syncPipelineLinks(ch);
       try {
-        await updateProject({characterId: ch.id, assetVersion: ch.assetVersion});
-        status.textContent = `已揀${ch.labelZh}・①填色／影相會用呢隻`;
+        await rememberCharacter(ch);
+        status.textContent = `已揀${ch.labelZh}・撳下面「① 開始填色」或卡片「填色／影相」`;
       } catch (e) {
         status.textContent = '未能記住角色：' + e.message;
       }
@@ -68,34 +86,26 @@ function renderCharGrid() {
   }
 }
 
-document.getElementById('start').disabled = true;
-document.getElementById('start').onclick = run(async () => {
+const startBtn = document.getElementById('start');
+startBtn.disabled = false;
+startBtn.onclick = run(async () => {
   const ch = getCharacter(selectedId) || defaultCharacter();
-  if (existing) {
+  // If switching to a different character while an old project exists, offer archive once.
+  const project = await readProject();
+  if (existing && project?.characterId && project.characterId !== ch.id) {
     dialog.dataset.nextCharacterId = ch.id;
     dialog.showModal();
-  } else {
-    await updateProject({
-      characterId: ch.id,
-      assetVersion: ch.assetVersion,
-      coloredPartIds: [],
-      poses: [null, null, null],
-    });
-    location.href = `./color.html?char=${encodeURIComponent(ch.id)}`;
+    return;
   }
+  await enterColor(ch);
 });
+
 document.getElementById('cancelNew').onclick = () => dialog.close();
 document.getElementById('archiveStart').onclick = run(async () => {
   const nextId = dialog.dataset.nextCharacterId || selectedId;
-  await archiveAndStart(nextId);
   const ch = getCharacter(nextId) || defaultCharacter();
-  await updateProject({
-    characterId: ch.id,
-    assetVersion: ch.assetVersion,
-    coloredPartIds: [],
-    poses: [null, null, null],
-  });
-  location.href = `./color.html?char=${encodeURIComponent(ch.id)}`;
+  dialog.close();
+  await enterColor(ch, {forceArchive: true});
 });
 document.getElementById('oldDownload').onclick = run(async () => {
   const {rig, images} = await loadRig();
@@ -109,12 +119,25 @@ document.getElementById('oldDownload').onclick = run(async () => {
   );
 });
 
+// Pipeline card: ensure click always has fresh ?char=
+document.getElementById('goColor')?.addEventListener('click', (ev) => {
+  const ch = getCharacter(selectedId) || defaultCharacter();
+  syncPipelineLinks(ch);
+  // let the browser follow updated href
+});
+
 async function init() {
   try {
     renderCharGrid();
     syncPipelineLinks(getCharacter(selectedId) || defaultCharacter());
+    startBtn.disabled = false;
     let project = await readProject();
-    const loaded = await loadRig();
+    let loaded = {hasColored: false};
+    try {
+      loaded = await loadRig();
+    } catch (e) {
+      console.warn('home loadRig', e);
+    }
     if (!project && loaded.hasColored)
       project = await updateProject({
         assetVersion: 'wukong-legacy-v1',
@@ -122,7 +145,6 @@ async function init() {
         coloredPartIds: loaded.coloredPartIds,
       });
     existing = !!project || loaded.hasColored;
-    document.getElementById('start').disabled = false;
     document.getElementById('continue').hidden = !existing;
     if (project?.assetVersion === 'wukong-legacy-v1') {
       document.getElementById('continue').href = './legacy-color.html';
@@ -148,8 +170,10 @@ async function init() {
         location.href = `./color.html?char=${encodeURIComponent(cid)}`;
       });
     }
+    status.textContent = '揀角色，再撳「① 開始填色」或上面「填色／影相」。';
   } catch (e) {
-    status.textContent = '未能讀取作品：' + e.message;
+    startBtn.disabled = false;
+    status.textContent = '未能讀取作品（仍可入場）：' + e.message;
   }
 }
 init();

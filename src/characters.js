@@ -13,8 +13,8 @@ export const CHAR_REGISTRY = [
     rodPreset: 'humanoid',
     kind: 'biped',
     rigMode: 'articulated',
-    width: 640,
-    height: 960,
+    width: 1024,
+    height: 1536,
   },
   {
     id: 'tangseng-v1',
@@ -26,8 +26,8 @@ export const CHAR_REGISTRY = [
     rodPreset: 'humanoid',
     kind: 'biped',
     rigMode: 'whole', // P1a: whole silhouette + body rod; P1b articulated
-    width: 640,
-    height: 960,
+    width: 1024,
+    height: 1536,
   },
   {
     id: 'bajie-v1',
@@ -39,8 +39,8 @@ export const CHAR_REGISTRY = [
     rodPreset: 'humanoid',
     kind: 'biped',
     rigMode: 'whole',
-    width: 640,
-    height: 960,
+    width: 1024,
+    height: 1536,
   },
   {
     id: 'sha-v1',
@@ -52,8 +52,8 @@ export const CHAR_REGISTRY = [
     rodPreset: 'humanoid',
     kind: 'biped',
     rigMode: 'whole',
-    width: 640,
-    height: 960,
+    width: 1024,
+    height: 1536,
   },
   {
     id: 'baima-v1',
@@ -65,8 +65,8 @@ export const CHAR_REGISTRY = [
     rodPreset: 'horse',
     kind: 'horse',
     rigMode: 'whole', // P1a body rod; P1b head/neck
-    width: 640,
-    height: 960,
+    width: 1024,
+    height: 1536,
   },
 ];
 
