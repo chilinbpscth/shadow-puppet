@@ -76,7 +76,7 @@ export async function joinRoom(roomCode) {
   const db = getLiveDatabase();
   const snap = await get(ref(db, roomPath(code)));
   if (!snap.exists()) {
-    const err = new Error('搵唔到呢個房間');
+    const err = new Error(roomMissingMessage(code));
     err.code = 'LIVE_NO_ROOM';
     throw err;
   }
@@ -161,6 +161,69 @@ export async function claimSeat(roomCode, characterId) {
   return { uid: user.uid, characterId, seats: finalSeats };
 }
 
+
+/**
+ * Ensure seats/{characterId}/uid === anon auth.uid (required for art/pose writes).
+ * If seat missing or owned by someone else path fails via claimSeat; if ours missing, reclaim.
+ * @returns {Promise<{ uid: string, reclaimed: boolean }>}
+ */
+export async function ensureSeatOwnership(roomCode, characterId) {
+  const user = await ensureAnonAuth();
+  const code = String(roomCode).toUpperCase();
+  const db = getLiveDatabase();
+  const seatSnap = await get(ref(db, `${roomPath(code)}/seats/${characterId}`));
+  const seat = seatSnap.val();
+  if (seat?.uid === user.uid) {
+    return { uid: user.uid, reclaimed: false };
+  }
+  await claimSeat(code, characterId);
+  return { uid: user.uid, reclaimed: true };
+}
+
+function isPermissionDenied(err) {
+  const code = String(err?.code || '');
+  const msg = String(err?.message || err || '');
+  return (
+    code === 'PERMISSION_DENIED' ||
+    code === 'permission-denied' ||
+    /PERMISSION_DENIED|permission-denied/i.test(msg)
+  );
+}
+
+function seatDeniedError(cause) {
+  const err = new Error(
+    '冇座位權限寫舞台：請確認已認領呢個角色（同一瀏覽器換位會釋放舊座），或重新入場再試',
+  );
+  err.code = 'LIVE_SEAT_DENIED';
+  err.cause = cause;
+  return err;
+}
+
+/** Run write after seat ownership; on permission-denied, reclaim once and retry once. */
+async function writeWithSeatRetry(roomCode, characterId, writeFn) {
+  await ensureSeatOwnership(roomCode, characterId);
+  try {
+    return await writeFn();
+  } catch (e) {
+    if (!isPermissionDenied(e)) throw e;
+    await ensureSeatOwnership(roomCode, characterId);
+    try {
+      return await writeFn();
+    } catch (e2) {
+      if (isPermissionDenied(e2)) throw seatDeniedError(e2);
+      throw e2;
+    }
+  }
+}
+
+export function roomMissingMessage(code) {
+  const c = String(code || '');
+  if (c.length >= 4 && c.length <= 5) {
+    return '房間碼通常 6 位，請對齊老師螢幕';
+  }
+  return '搵唔到呢個房間';
+}
+
 export async function setRoomStatus(roomCode, status) {
   const user = await ensureAnonAuth();
   const code = String(roomCode).toUpperCase();
@@ -210,23 +273,26 @@ export async function compressArtToDataUrl(source, opts = {}) {
  * @param {string} dataUrl JPEG (or PNG) data URL
  */
 export async function publishArt(roomCode, characterId, dataUrl) {
-  const user = await ensureAnonAuth();
   const code = String(roomCode).toUpperCase();
-  const db = getLiveDatabase();
   const ch = getCharacter(characterId);
   const mime = String(dataUrl).startsWith('data:image/png')
     ? 'image/png'
     : 'image/jpeg';
-  const payload = {
-    kind: 'dataUrl',
-    mime,
-    dataUrl,
-    updatedAt: Date.now(),
-    assetVersion: ch?.assetVersion || '',
-    uid: user.uid,
-  };
-  await set(ref(db, `${roomPath(code)}/puppets/${characterId}/art`), payload);
-  return payload;
+
+  return writeWithSeatRetry(code, characterId, async () => {
+    const user = await ensureAnonAuth();
+    const db = getLiveDatabase();
+    const payload = {
+      kind: 'dataUrl',
+      mime,
+      dataUrl,
+      updatedAt: Date.now(),
+      assetVersion: ch?.assetVersion || '',
+      uid: user.uid,
+    };
+    await set(ref(db, `${roomPath(code)}/puppets/${characterId}/art`), payload);
+    return payload;
+  });
 }
 
 export function poseToPayload(pose, extra = {}) {
@@ -283,12 +349,14 @@ export function createPosePublisher(roomCode, characterId, hz = POSE_HZ) {
     writing = true;
     lastSent = Date.now();
     try {
-      const user = await ensureAnonAuth();
-      const db = getLiveDatabase();
       const code = String(roomCode).toUpperCase();
-      await set(ref(db, `${roomPath(code)}/puppets/${characterId}/pose`), {
-        ...payload,
-        uid: user.uid,
+      await writeWithSeatRetry(code, characterId, async () => {
+        const user = await ensureAnonAuth();
+        const db = getLiveDatabase();
+        await set(ref(db, `${roomPath(code)}/puppets/${characterId}/pose`), {
+          ...payload,
+          uid: user.uid,
+        });
       });
     } finally {
       writing = false;

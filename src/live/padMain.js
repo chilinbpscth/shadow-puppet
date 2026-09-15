@@ -21,6 +21,7 @@ import {
   seatIdsForP2a,
   publishArt,
   compressArtToDataUrl,
+  ensureSeatOwnership,
 } from './room.js';
 import { drawShadowStage } from '../stageBackdrop.js';
 
@@ -203,8 +204,14 @@ async function reloadLocalArt() {
 async function onPublishArt() {
   if (!roomCode || !characterId) return;
   els.btnPublishArt.disabled = true;
-  setStatus('壓縮並推上舞台…');
+  setStatus('確認座位權限…');
   try {
+    const { reclaimed } = await ensureSeatOwnership(roomCode, characterId);
+    if (reclaimed) {
+      setStatus('座位已重新認領・壓縮並推上舞台…');
+    } else {
+      setStatus('壓縮並推上舞台…');
+    }
     let source = null;
     const blob = await loadColoredPart(characterId, 'whole');
     if (blob) {
@@ -271,7 +278,7 @@ async function onJoin() {
 }
 
 async function onClaim(id) {
-  setStatus('認領座位…');
+  setStatus(characterId && characterId !== id ? '換位・重新認領座位…' : '認領座位…');
   try {
     await claimSeat(roomCode, id);
     characterId = id;

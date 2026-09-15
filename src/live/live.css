@@ -37,6 +37,12 @@
   gap: 8px;
   overflow: auto;
 }
+.room-code-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
 .room-code {
   font-size: clamp(2.4rem, 8vw, 4rem);
   font-weight: 700;
@@ -48,6 +54,14 @@
   border-radius: 12px;
   color: #e8c878;
   user-select: all;
+  cursor: text;
+  outline: none;
+}
+.room-code:focus {
+  box-shadow: 0 0 0 3px rgba(232, 200, 120, 0.35);
+}
+.btn-copy-code {
+  width: 100%;
 }
 .phase-pill {
   margin-left: auto;

@@ -27,6 +27,7 @@ const STAGE_H = 720;
 const els = {
   status: document.getElementById('liveStatus'),
   roomCode: document.getElementById('roomCode'),
+  btnCopyCode: document.getElementById('btnCopyCode'),
   btnCreate: document.getElementById('btnCreate'),
   btnPlay: document.getElementById('btnPlay'),
   btnLobby: document.getElementById('btnLobby'),
@@ -215,6 +216,10 @@ function attachRoom(code) {
   cleanupSubs();
   roomCode = code;
   els.roomCode.textContent = code;
+  if (els.btnCopyCode) {
+    els.btnCopyCode.disabled = false;
+    els.btnCopyCode.textContent = '複製房間碼';
+  }
   els.padHint.textContent = `學生開 pad.html，輸入 ${code}`;
   unsubs.push(
     subscribeMeta(code, (meta) => {
@@ -283,9 +288,49 @@ async function onLobby() {
   }
 }
 
+
+async function onCopyCode() {
+  if (!roomCode) return;
+  const label = els.btnCopyCode;
+  try {
+    await navigator.clipboard.writeText(roomCode);
+    if (label) {
+      label.textContent = '已複製';
+      setTimeout(() => {
+        if (label) label.textContent = '複製房間碼';
+      }, 1600);
+    }
+    setStatus(`已複製房間碼 ${roomCode}`);
+  } catch (e) {
+    // Fallback: select the large code for manual copy
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(els.roomCode);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (_) {
+      /* ignore */
+    }
+    setStatus('請長按／全選上方房間碼再複製', true);
+  }
+}
+
 els.btnCreate.addEventListener('click', onCreate);
 els.btnPlay.addEventListener('click', onPlay);
 els.btnLobby.addEventListener('click', onLobby);
+els.btnCopyCode?.addEventListener('click', onCopyCode);
+els.roomCode?.addEventListener('click', () => {
+  try {
+    const range = document.createRange();
+    range.selectNodeContents(els.roomCode);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch (_) {
+    /* ignore */
+  }
+});
 els.btnPlay.disabled = true;
 els.btnLobby.disabled = true;
 

@@ -9,7 +9,7 @@
   </head>
   <body class="live-page host-page">
     <header class="topbar">
-      <a href="./index.html">‹ 首頁</a>
+      <a href="./index.html?v=seatfix1">‹ 首頁</a>
       <span class="seal">影</span>
       <strong>③ 多人舞台・主持</strong>
       <span id="phaseLabel" class="phase-pill">等候室</span>
@@ -17,7 +17,10 @@
     <main class="live-layout">
       <aside class="live-side">
         <p class="eyebrow">房間碼（給學生）</p>
-        <div id="roomCode" class="room-code" aria-live="polite">————</div>
+        <div class="room-code-block">
+          <div id="roomCode" class="room-code" aria-live="polite" tabindex="0" title="撳一下可全選">————</div>
+          <button type="button" id="btnCopyCode" class="btn secondary btn-copy-code" disabled>複製房間碼</button>
+        </div>
         <p id="padHint" class="note">流程：①填色 → ②舞台練棍 → 呢度開房；學生用遙控頁入碼後「推上舞台」</p>
         <div class="live-actions">
           <button type="button" id="btnCreate" class="btn">開房</button>
