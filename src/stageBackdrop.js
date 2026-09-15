@@ -1,6 +1,6 @@
 /**
- * Theatrical shadow-puppet rear-lit screen for live/pad canvases.
- * Not a checkerboard (editor only) — warm parchment screen in a dark wood frame.
+ * Theatrical shadow-puppet rear-lit screen (shared solo + live/pad).
+ * Warm parchment screen in a dark wood frame — not a checkerboard.
  */
 
 /**

@@ -4,9 +4,12 @@ export function renderArtwork(rig, images, pose, width = 900, height = 720) {
   const c = document.createElement("canvas");
   c.width = width;
   c.height = height;
+  // Keep cream backdrop for printable 三格 PNG (classroom worksheets);
+  // solo/live stage canvas uses theatrical framed screen instead.
   drawPuppet(c.getContext("2d"), rig, images, {
     joints: resolveManualJoints(rig, pose),
     scale: pose.scale,
+    backdrop: "cream",
   });
   return c;
 }

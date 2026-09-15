@@ -22,7 +22,7 @@ import {
   publishArt,
   compressArtToDataUrl,
 } from './room.js';
-import { drawShadowStage } from './stageBackdrop.js';
+import { drawShadowStage } from '../stageBackdrop.js';
 
 const STAGE_W = 900;
 const STAGE_H = 720;

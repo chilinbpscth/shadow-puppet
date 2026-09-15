@@ -4,6 +4,8 @@
  * Pose mode: pass opts.joints from bindPose (absolute canvas coords).
  */
 
+import { drawShadowStage } from './stageBackdrop.js';
+
 /**
  * Resolve absolute joint transforms for default standing / T-ish pose.
  *
@@ -67,6 +69,7 @@ export function resolvePose(rig, layout) {
  *   scale?: number,
  *   joints?: Map<string, { x: number, y: number, rotation: number }> | null,
  *   clear?: boolean,
+ *   backdrop?: 'stage' | 'cream',  // default 'stage' when clear; export uses 'cream'
  * }} [opts]
  */
 export function drawPuppet(ctx, rig, images, opts = {}) {
@@ -78,6 +81,7 @@ export function drawPuppet(ctx, rig, images, opts = {}) {
   };
   const showDebug = !!opts.showDebug;
   const clear = opts.clear !== false;
+  const backdrop = opts.backdrop || 'stage';
 
   let pose;
   if (opts.joints && opts.joints.size) {
@@ -93,9 +97,14 @@ export function drawPuppet(ctx, rig, images, opts = {}) {
 
   if (clear) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = '#FBF8F2';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (backdrop === 'cream') {
+      // Classroom print / 三格 export: clean cream (less ink, clearer labels)
+      ctx.fillStyle = '#FBF8F2';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+      // Solo stage projection: same theatrical 皮影幕 as live
+      drawShadowStage(ctx, canvas.width, canvas.height);
+    }
   }
 
   const ordered = [...rig.parts].sort(

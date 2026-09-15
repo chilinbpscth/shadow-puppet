@@ -19,7 +19,7 @@ import {
   payloadToPoseFields,
   seatIdsForP2a,
 } from './room.js';
-import { drawShadowStage } from './stageBackdrop.js';
+import { drawShadowStage } from '../stageBackdrop.js';
 
 const STAGE_W = 900;
 const STAGE_H = 720;
