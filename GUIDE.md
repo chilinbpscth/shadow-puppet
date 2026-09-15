@@ -34,7 +34,15 @@
 
 ## 多人舞台 P2a（Firebase）
 
-試玩：1 個主持舞台 + 最多 2 部學生遙控（孫悟空、唐僧）。要上網；單機 `stage.html` 不變。
+試玩：1 個主持舞台 + 最多 2 部學生遙控（孫悟空、唐僧）。要上網；單機 `stage.html` 不變。舞台用皮影戲燈幕（羊皮／絲布暖光）＋木框，唔用編輯器棋盤格透明底。
+
+### 課堂流程
+
+1. **先填色／影相**：喺 `color.html`（或列印線稿後影相入偶）畫好自己嘅角色作品（存本機 IndexedDB）。
+2. **Pad 入場認領**：開 `pad.html` 輸入房間碼 → 認領孫悟空或唐僧座位。
+3. **載入作品**：認領時自動讀 IndexedDB；亦可撳「重新載入我嘅作品」。
+4. **推上舞台**：撳「推上舞台」一次上傳壓縮 JPEG 到 RTDB `puppets/{id}/art`；主持舞台替換該偶圖像。
+5. **操棍**：拖虛擬棍／撥轉身，姿勢約 15Hz 同步。
 
 ### 本機測試
 
@@ -44,13 +52,13 @@ npm run dev
 ```
 
 1. 瀏覽器開 [live.html](http://localhost:5173/live.html)（主持／投影）→ 撳「開房」→ 記低大字房間碼。
-2. 另一個視窗／裝置開 [pad.html](http://localhost:5173/pad.html)（或 `pad.html?room=XXXXXX`）→ 輸入房間碼 → 認領空位。
+2. 學生先喺 [color.html](http://localhost:5173/color.html) 填色／影相（首頁揀角色），再開 [pad.html](http://localhost:5173/pad.html)（或 `pad.html?room=XXXXXX`）→ 輸入房間碼 → 認領空位 → 「重新載入」→ 「推上舞台」。
 3. 第二部 pad 認領另一個角色；拖棍／撥轉身，主持畫布應見到最多兩隻偶郁動。
 4. 主持可撳「開始演出」改 `meta.status`（等候室／演出中）。
 
 正式 build：`npm run build` 後 `dist/live.html`、`dist/pad.html`。Firebase 專案 `chilin-shadow-puppet`；設定喺 `src/live/firebaseConfig.js`。課堂要用 Anonymous Auth + Realtime Database（已開）。
 
-限制（P2a）：只同步姿勢數字（x/y/scale/facing／棍 localRot），唔每幀上傳填色圖；座位最多 2。
+限制（P2a）：姿勢數字持續同步（x/y/scale/facing／棍 localRot）；作品圖只喺「推上舞台」時上傳一次（JPEG ≈480px 寬、quality 0.6，約數十 KB；RTDB 單次寫入上限約 10MB）。座位最多 2。線稿關節圓應只喺肩／肘／髖／膝／踝，唔應喺軀幹中線排成糖人釘；角色 PNG 由素材清理，舞台唔畫棋盤格。
 
 ## 維護及部署
 

@@ -9,6 +9,9 @@ import { getCharacter, listCharacters } from '../characters.js';
 export const P2A_SEAT_IDS = ['wukong-v2', 'tangseng-v1'];
 export const MAX_SEATS_P2A = 2;
 export const POSE_HZ = 15;
+/** JPEG art for RTDB: keep under ~100KB typical (RTDB soft limit ~10MB/write). */
+export const ART_MAX_WIDTH = 480;
+export const ART_JPEG_QUALITY = 0.6;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 function roomPath(code) {
@@ -171,6 +174,59 @@ export async function setRoomStatus(roomCode, status) {
     throw err;
   }
   await update(ref(db, `${roomPath(code)}/meta`), { status });
+}
+
+/**
+ * Compress an Image/Canvas/Bitmap to a JPEG data URL for RTDB art sync.
+ * @param {CanvasImageSource} source
+ * @param {{ maxWidth?: number, quality?: number }} [opts]
+ * @returns {Promise<{ dataUrl: string, mime: string, width: number, height: number }>}
+ */
+export async function compressArtToDataUrl(source, opts = {}) {
+  const maxWidth = opts.maxWidth ?? ART_MAX_WIDTH;
+  const quality = opts.quality ?? ART_JPEG_QUALITY;
+  const sw = /** @type {{ width: number }} */ (source).width || /** @type {{ naturalWidth: number }} */ (source).naturalWidth;
+  const sh = /** @type {{ height: number }} */ (source).height || /** @type {{ naturalHeight: number }} */ (source).naturalHeight;
+  if (!sw || !sh) throw new Error('作品圖無效');
+  const scale = Math.min(1, maxWidth / sw);
+  const w = Math.max(1, Math.round(sw * scale));
+  const h = Math.max(1, Math.round(sh * scale));
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d');
+  // Cream fill under transparent PNG so JPEG has no checkerboard / black holes
+  ctx.fillStyle = '#F5ECD4';
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(source, 0, 0, w, h);
+  const dataUrl = c.toDataURL('image/jpeg', quality);
+  return { dataUrl, mime: 'image/jpeg', width: w, height: h };
+}
+
+/**
+ * Upload compressed artwork once to puppets/{characterId}/art.
+ * @param {string} roomCode
+ * @param {string} characterId
+ * @param {string} dataUrl JPEG (or PNG) data URL
+ */
+export async function publishArt(roomCode, characterId, dataUrl) {
+  const user = await ensureAnonAuth();
+  const code = String(roomCode).toUpperCase();
+  const db = getLiveDatabase();
+  const ch = getCharacter(characterId);
+  const mime = String(dataUrl).startsWith('data:image/png')
+    ? 'image/png'
+    : 'image/jpeg';
+  const payload = {
+    kind: 'dataUrl',
+    mime,
+    dataUrl,
+    updatedAt: Date.now(),
+    assetVersion: ch?.assetVersion || '',
+    uid: user.uid,
+  };
+  await set(ref(db, `${roomPath(code)}/puppets/${characterId}/art`), payload);
+  return payload;
 }
 
 export function poseToPayload(pose, extra = {}) {

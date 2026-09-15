@@ -1,5 +1,5 @@
 /**
- * Student remote pad: join room, claim seat, rod control → RTDB pose @ ~15Hz.
+ * Student remote pad: join room, claim seat, load IndexedDB art, publish to stage, rod control.
  */
 import { drawPuppet } from '../drawPuppet.js';
 import {
@@ -7,9 +7,11 @@ import {
   resolveManualJoints,
   constrainPose,
 } from '../dragPose.js';
-import { loadProfileRig } from '../profileRig.js';
+import { loadProfileRig, loadTemplate } from '../profileRig.js';
 import { createRodControls } from '../rodControls.js';
 import { getCharacter } from '../characters.js';
+import { loadColoredPart, blobToImage } from '../colorStorage.js';
+import { updateProject } from '../projectStorage.js';
 import {
   joinRoom,
   claimSeat,
@@ -17,7 +19,10 @@ import {
   subscribeSeats,
   subscribeMeta,
   seatIdsForP2a,
+  publishArt,
+  compressArtToDataUrl,
 } from './room.js';
+import { drawShadowStage } from './stageBackdrop.js';
 
 const STAGE_W = 900;
 const STAGE_H = 720;
@@ -34,6 +39,11 @@ const els = {
   phase: document.getElementById('padPhase'),
   canvas: document.getElementById('padStage'),
   rodRail: document.getElementById('rodRail'),
+  btnColor: document.getElementById('btnColor'),
+  btnPrint: document.getElementById('btnPrint'),
+  btnReloadArt: document.getElementById('btnReloadArt'),
+  btnPublishArt: document.getElementById('btnPublishArt'),
+  artHint: document.getElementById('artHint'),
 };
 
 const ctx = els.canvas.getContext('2d');
@@ -50,6 +60,7 @@ let publisher = null;
 let unsubs = [];
 let dirty = true;
 let raf = 0;
+let hasLocalArt = false;
 
 function setStatus(msg, isError = false) {
   els.status.textContent = msg;
@@ -81,11 +92,13 @@ function cleanup() {
 
 function renderLoop() {
   raf = requestAnimationFrame(renderLoop);
-  if (!dirty || !rigPack || !manualPose) return;
+  if (!dirty) return;
   dirty = false;
+  drawShadowStage(ctx, STAGE_W, STAGE_H);
+  if (!rigPack || !manualPose) return;
   const joints = resolveManualJoints(rigPack.rig, manualPose);
   drawPuppet(ctx, rigPack.rig, rigPack.images, {
-    clear: true,
+    clear: false,
     joints,
     scale: manualPose.scale,
     cx: manualPose.rootX,
@@ -120,6 +133,107 @@ function renderSeatButtons(seats) {
         : `認領 ${ch?.labelZh || id}`;
     btn.addEventListener('click', () => onClaim(id));
     els.seatButtons.append(btn);
+  }
+}
+
+function syncArtChrome() {
+  if (els.artHint) {
+    els.artHint.textContent = hasLocalArt
+      ? '已載入本機作品・可推上舞台'
+      : '未見本機填色／影相・請先填色或影相，再重新載入';
+  }
+  if (els.btnPublishArt) els.btnPublishArt.disabled = !characterId;
+  if (els.btnColor) {
+    els.btnColor.href = './color.html';
+  }
+  if (els.btnPrint && characterId) {
+    els.btnPrint.href = `./print.html?char=${encodeURIComponent(characterId)}`;
+  }
+}
+
+async function applyRigPack(pack, id) {
+  rigPack = pack;
+  hasLocalArt = !!pack.hasColored;
+  const layout = layoutCenter();
+  const prevFacing = manualPose?.facing;
+  const prevRootX = manualPose?.rootX;
+  const prevRootY = manualPose?.rootY;
+  const prevScale = manualPose?.scale;
+  const prevLocal = manualPose?.localRot;
+  manualPose = createManualPose(rigPack.rig, layout);
+  const ids = seatIdsForP2a();
+  const idx = ids.indexOf(id);
+  if (typeof prevRootX === 'number') {
+    manualPose.rootX = prevRootX;
+    manualPose.rootY = prevRootY ?? manualPose.rootY;
+    manualPose.scale = prevScale ?? manualPose.scale;
+    if (prevFacing === -1 || prevFacing === 1) manualPose.facing = prevFacing;
+    if (prevLocal instanceof Map) manualPose.localRot = new Map(prevLocal);
+  } else {
+    if (idx === 0) manualPose.rootX = STAGE_W * 0.32;
+    else if (idx === 1) manualPose.rootX = STAGE_W * 0.68;
+  }
+  syncArtChrome();
+  dirty = true;
+}
+
+async function reloadLocalArt() {
+  if (!characterId) return;
+  setStatus('重新載入本機作品…');
+  try {
+    const pack = await loadProfileRig(true, characterId);
+    await applyRigPack(pack, characterId);
+    publish();
+    setStatus(
+      hasLocalArt
+        ? '已載入填色／影相作品'
+        : '未搵到本機作品・請先去填色／影相',
+    );
+  } catch (e) {
+    console.error(e);
+    setStatus(e?.message || String(e), true);
+  }
+}
+
+async function onPublishArt() {
+  if (!roomCode || !characterId) return;
+  els.btnPublishArt.disabled = true;
+  setStatus('壓縮並推上舞台…');
+  try {
+    let source = null;
+    const blob = await loadColoredPart(characterId, 'whole');
+    if (blob) {
+      source = await blobToImage(blob);
+    } else {
+      // Fallback: template (still better than empty) — cream under JPEG avoids checker look
+      source = await loadTemplate(characterId);
+    }
+    const { dataUrl } = await compressArtToDataUrl(source);
+    await publishArt(roomCode, characterId, dataUrl);
+    setStatus('已推上舞台・主持可見你嘅作品');
+  } catch (e) {
+    console.error(e);
+    setStatus(e?.message || String(e), true);
+  } finally {
+    els.btnPublishArt.disabled = false;
+  }
+}
+
+async function onOpenColor(ev) {
+  if (!characterId) return;
+  ev.preventDefault();
+  try {
+    const ch = getCharacter(characterId);
+    if (ch) {
+      await updateProject({
+        characterId: ch.id,
+        assetVersion: ch.assetVersion,
+      });
+    }
+    location.href = './color.html';
+  } catch (e) {
+    console.error(e);
+    setStatus(e?.message || String(e), true);
   }
 }
 
@@ -159,19 +273,14 @@ async function onClaim(id) {
     const ch = getCharacter(id);
     els.charLabel.textContent = ch?.labelZh || id;
 
-    rigPack = await loadProfileRig(true, id);
-    manualPose = createManualPose(rigPack.rig, layoutCenter());
-    // Offset slightly by seat index so two pads don't stack at center on host defaults
-    const ids = seatIdsForP2a();
-    const idx = ids.indexOf(id);
-    if (idx === 0) manualPose.rootX = STAGE_W * 0.32;
-    else if (idx === 1) manualPose.rootX = STAGE_W * 0.68;
+    // Prefer student's IndexedDB whole color
+    const pack = await loadProfileRig(true, id);
+    await applyRigPack(pack, id);
 
     publisher?.dispose();
     publisher = createPosePublisher(roomCode, characterId);
 
     if (rodControls) {
-      // recreate: rodControls has no destroy; rebuild rail
       els.rodRail.replaceChildren();
       document.querySelectorAll('.rod-lines').forEach((n) => n.remove());
     }
@@ -188,7 +297,11 @@ async function onClaim(id) {
     show(els.playPanel);
     dirty = true;
     publish();
-    setStatus(`你控 ${ch?.labelZh || id}・拖棍推提`);
+    setStatus(
+      hasLocalArt
+        ? `你控 ${ch?.labelZh || id}・可推上舞台再操棍`
+        : `你控 ${ch?.labelZh || id}・建議先填色／影相再推上舞台`,
+    );
   } catch (e) {
     console.error(e);
     setStatus(e?.message || String(e), true);
@@ -205,6 +318,9 @@ els.btnJoin.addEventListener('click', onJoin);
 els.roomInput.addEventListener('keydown', (ev) => {
   if (ev.key === 'Enter') onJoin();
 });
+els.btnColor?.addEventListener('click', onOpenColor);
+els.btnReloadArt?.addEventListener('click', () => reloadLocalArt());
+els.btnPublishArt?.addEventListener('click', () => onPublishArt());
 
 show(els.joinPanel);
 raf = requestAnimationFrame(renderLoop);

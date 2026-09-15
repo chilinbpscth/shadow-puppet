@@ -30,13 +30,23 @@
       <h2>揀角色座位</h2>
       <p class="note">P2a：最多兩人；已佔座位唔可以搶</p>
       <div id="seatButtons" class="seat-buttons"></div>
-      <p class="status" role="status">認領後就可以操棍</p>
+      <p class="status" role="status">認領後載入作品，再推上舞台操棍</p>
     </section>
 
     <section id="playPanel" class="pad-play" hidden>
       <p class="pad-char"><span id="charLabel">—</span>　拖棍推提；撥轉身</p>
+      <div class="art-steps" aria-label="作品步驟">
+        <p class="art-steps-title">課堂流程</p>
+        <div class="art-actions">
+          <a class="btn" id="btnColor" href="./color.html">填色／影相</a>
+          <a class="btn secondary" id="btnPrint" href="./print.html">列印線稿</a>
+          <button type="button" class="btn secondary" id="btnReloadArt">重新載入我嘅作品</button>
+          <button type="button" class="btn" id="btnPublishArt">推上舞台</button>
+        </div>
+        <p id="artHint" class="note art-hint">認領後會試載入本機 IndexedDB 作品</p>
+      </div>
       <div class="stage-column">
-        <div class="stage-wrap">
+        <div class="stage-wrap shadow-proscenium">
           <canvas id="padStage" width="900" height="720" aria-label="你的影偶預覽"></canvas>
         </div>
         <div class="rod-toolbar" id="rodToolbar">
@@ -45,7 +55,7 @@
           <label class="rod-turn">向左 <input id="rodTurn" type="range" min="-100" max="100" value="100" aria-label="轉動身棍" /> 向右 <span>撥轉身棍</span></label>
         </div>
       </div>
-      <p class="status note">姿勢會同步到舞台（約每秒 15 次）</p>
+      <p class="status note">姿勢會同步到舞台（約每秒 15 次）；作品圖按「推上舞台」上傳一次</p>
     </section>
 
     <script type="module" src="/src/live/padMain.js"></script>

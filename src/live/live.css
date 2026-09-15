@@ -1,3 +1,26 @@
+/* Darker ambient so the lit parchment screen pops (projector / theater feel) */
+.live-page.host-page,
+.live-page.pad-page {
+  background: #140e0b;
+  color: #ede6d8;
+}
+.live-page.host-page .topbar,
+.live-page.pad-page .topbar {
+  color: #ede6d8;
+}
+.live-page.host-page .note,
+.live-page.pad-page .note,
+.live-page.host-page .status,
+.live-page.pad-page .status,
+.live-page.host-page .eyebrow,
+.live-page.pad-page .subhead {
+  color: #b2a89a;
+}
+.live-page.host-page a,
+.live-page.pad-page a {
+  color: #e8dcc4;
+}
+
 .live-page {
   gap: 8px;
 }
@@ -20,10 +43,10 @@
   letter-spacing: 0.18em;
   text-align: center;
   padding: 16px 8px;
-  background: var(--surface);
-  border: 2px solid var(--gold);
+  background: #2a1c16;
+  border: 2px solid #a57b2e;
   border-radius: 12px;
-  color: var(--red);
+  color: #e8c878;
   user-select: all;
 }
 .phase-pill {
@@ -31,9 +54,9 @@
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  color: var(--muted);
+  background: #2a1c16;
+  border: 1px solid #403a31;
+  color: #b2a89a;
 }
 .live-actions {
   display: flex;
@@ -41,9 +64,18 @@
   gap: 8px;
 }
 .live-actions .btn.secondary,
-button.secondary {
-  background: var(--surface);
-  color: var(--ink);
+button.secondary,
+a.btn.secondary {
+  background: #2a1c16;
+  color: #ede6d8;
+  border-color: #403a31;
+}
+.live-page .btn,
+.live-page button.btn,
+.live-page a.btn {
+  background: #5c241f;
+  color: #fff;
+  border-color: #7a3028;
 }
 .seat-list {
   list-style: none;
@@ -56,11 +88,12 @@ button.secondary {
 .seat-list .seat {
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--surface);
+  border: 1px solid #403a31;
+  background: #2a1c16;
+  color: #ede6d8;
 }
 .seat-list .seat.taken {
-  border-color: var(--gold);
+  border-color: #a57b2e;
 }
 .live-stage-column {
   min-height: 0;
@@ -71,16 +104,40 @@ button.secondary {
   flex: 1;
   min-height: 0;
 }
-.live-stage-column canvas {
+
+/* Theatrical wood / burgundy proscenium around the lit screen canvas */
+.shadow-proscenium {
+  background: linear-gradient(160deg, #3a1814 0%, #1a0c0a 40%, #2c1410 100%);
+  border: 10px solid #4a1e18;
+  border-image: none;
+  box-shadow:
+    inset 0 0 0 3px #6b2e24,
+    inset 0 0 0 6px rgba(165, 123, 46, 0.35),
+    0 8px 28px rgba(0, 0, 0, 0.55),
+    0 0 40px rgba(80, 40, 20, 0.25);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shadow-proscenium canvas {
+  display: block;
   width: 100%;
   height: auto;
   max-height: calc(100dvh - 100px);
-  background: #fbf8f2;
-  border-radius: 12px;
-  border: 1px solid var(--line);
+  background: transparent;
+  border-radius: 4px;
+  border: none;
+  box-shadow: inset 0 0 24px rgba(40, 20, 8, 0.15);
 }
+
+.live-stage-column canvas {
+  max-height: calc(100dvh - 100px);
+}
+
 .status.is-error {
-  color: var(--red);
+  color: #e88a84;
 }
 .pad-panel {
   max-width: 420px;
@@ -89,16 +146,17 @@ button.secondary {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  background: var(--surface);
+  background: #2a1c16;
   border-radius: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid #403a31;
+  color: #ede6d8;
 }
 .room-input-label {
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-size: 13px;
-  color: var(--muted);
+  color: #b2a89a;
 }
 #roomInput {
   font-size: 1.6rem;
@@ -107,9 +165,9 @@ button.secondary {
   text-align: center;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--ground);
-  color: var(--ink);
+  border: 1px solid #403a31;
+  background: #1a100c;
+  color: #ede6d8;
 }
 .seat-buttons {
   display: flex;
@@ -117,7 +175,7 @@ button.secondary {
   gap: 10px;
 }
 .seat-pick.mine {
-  background: var(--red);
+  background: #bc3532;
   color: #fff;
 }
 .pad-play {
@@ -130,19 +188,56 @@ button.secondary {
 .pad-char {
   text-align: center;
   font-weight: 600;
+  color: #ede6d8;
 }
 .pad-page .stage-column {
   flex: 1;
   min-height: 0;
 }
+.pad-page .shadow-proscenium canvas,
 .pad-page #padStage {
   width: 100%;
   height: auto;
-  max-height: min(48dvh, 420px);
-  background: #fbf8f2;
-  border-radius: 12px;
-  border: 1px solid var(--line);
+  max-height: min(42dvh, 380px);
+  background: transparent;
+  border-radius: 4px;
+  border: none;
 }
+
+.art-steps {
+  max-width: 560px;
+  margin: 0 auto 8px;
+  padding: 10px 12px;
+  background: #2a1c16;
+  border: 1px solid #403a31;
+  border-radius: 12px;
+}
+.art-steps-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e8c878;
+}
+.art-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.art-actions .btn,
+.art-actions button {
+  flex: 1 1 auto;
+  min-width: 7.5em;
+  text-align: center;
+}
+.art-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.pad-page .rod-toolbar {
+  color: #b2a89a;
+}
+
 @media (max-width: 800px) {
   .live-layout {
     grid-template-columns: 1fr;
