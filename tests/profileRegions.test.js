@@ -98,7 +98,7 @@ test('mapRegionsToContent scales pivots into destination bbox', () => {
   ]);
 });
 
-test('tangseng filters staff and tail; bajie/sha keep staff drop tail', () => {
+test('tangseng native regions have no staff/tail; bajie/sha keep staff drop tail', () => {
   const box = DESIGN_CONTENT_BBOX;
   const tang = resolveCutRegions(getCharacter('tangseng-v1'), box, 1024, 1536);
   assert.ok(!tang.some((r) => r.id === 'staff' || r.id === 'tail'));
