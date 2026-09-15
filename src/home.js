@@ -37,6 +37,7 @@ function syncPipelineLinks(ch) {
   if (startHint) startHint.textContent = `① 進入畫${label}`;
   const cont = document.getElementById('continue');
   if (cont && !cont.hidden) cont.href = `./color.html${q}`;
+  if (startBtn) startBtn.href = `./color.html${q}`;
 }
 
 async function rememberCharacter(ch) {
@@ -87,8 +88,10 @@ function renderCharGrid() {
 }
 
 const startBtn = document.getElementById('start');
-startBtn.disabled = false;
-startBtn.onclick = run(async () => {
+if (startBtn) startBtn.removeAttribute('disabled');
+startBtn?.addEventListener('click', run(async (ev) => {
+  ev.preventDefault();
+
   const ch = getCharacter(selectedId) || defaultCharacter();
   // If switching to a different character while an old project exists, offer archive once.
   const project = await readProject();
@@ -98,7 +101,7 @@ startBtn.onclick = run(async () => {
     return;
   }
   await enterColor(ch);
-});
+}));
 
 document.getElementById('cancelNew').onclick = () => dialog.close();
 document.getElementById('archiveStart').onclick = run(async () => {
@@ -130,7 +133,7 @@ async function init() {
   try {
     renderCharGrid();
     syncPipelineLinks(getCharacter(selectedId) || defaultCharacter());
-    startBtn.disabled = false;
+    if (startBtn) startBtn.removeAttribute("disabled");
     let project = await readProject();
     let loaded = {hasColored: false};
     try {
@@ -172,7 +175,7 @@ async function init() {
     }
     status.textContent = '揀角色，再撳「① 開始填色」或上面「填色／影相」。';
   } catch (e) {
-    startBtn.disabled = false;
+    if (startBtn) startBtn.removeAttribute("disabled");
     status.textContent = '未能讀取作品（仍可入場）：' + e.message;
   }
 }
