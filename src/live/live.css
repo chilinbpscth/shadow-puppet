@@ -1,0 +1,153 @@
+.live-page {
+  gap: 8px;
+}
+.live-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+.live-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+}
+.room-code {
+  font-size: clamp(2.4rem, 8vw, 4rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: center;
+  padding: 16px 8px;
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  color: var(--red);
+  user-select: all;
+}
+.phase-pill {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.live-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.live-actions .btn.secondary,
+button.secondary {
+  background: var(--surface);
+  color: var(--ink);
+}
+.seat-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.seat-list .seat {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.seat-list .seat.taken {
+  border-color: var(--gold);
+}
+.live-stage-column {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.live-stage-column .stage-wrap {
+  flex: 1;
+  min-height: 0;
+}
+.live-stage-column canvas {
+  width: 100%;
+  height: auto;
+  max-height: calc(100dvh - 100px);
+  background: #fbf8f2;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.status.is-error {
+  color: var(--red);
+}
+.pad-panel {
+  max-width: 420px;
+  margin: 24px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+}
+.room-input-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+#roomInput {
+  font-size: 1.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--ground);
+  color: var(--ink);
+}
+.seat-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.seat-pick.mine {
+  background: var(--red);
+  color: #fff;
+}
+.pad-play {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+}
+.pad-char {
+  text-align: center;
+  font-weight: 600;
+}
+.pad-page .stage-column {
+  flex: 1;
+  min-height: 0;
+}
+.pad-page #padStage {
+  width: 100%;
+  height: auto;
+  max-height: min(48dvh, 420px);
+  background: #fbf8f2;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+@media (max-width: 800px) {
+  .live-layout {
+    grid-template-columns: 1fr;
+  }
+  .room-code {
+    font-size: 2.2rem;
+  }
+}

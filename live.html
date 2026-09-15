@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>皮影戲・多人舞台（主持）</title>
+    <link rel="stylesheet" href="/src/redesign.css" />
+    <link rel="stylesheet" href="/src/live/live.css" />
+  </head>
+  <body class="live-page host-page">
+    <header class="topbar">
+      <a href="./index.html">‹ 首頁</a>
+      <span class="seal">影</span>
+      <strong>多人舞台・主持</strong>
+      <span id="phaseLabel" class="phase-pill">等候室</span>
+    </header>
+    <main class="live-layout">
+      <aside class="live-side">
+        <p class="eyebrow">房間碼（給學生）</p>
+        <div id="roomCode" class="room-code" aria-live="polite">————</div>
+        <p id="padHint" class="note">撳「開房」後顯示碼；學生開 pad.html 輸入</p>
+        <div class="live-actions">
+          <button type="button" id="btnCreate" class="btn">開房</button>
+          <button type="button" id="btnPlay" class="btn" disabled>開始演出</button>
+          <button type="button" id="btnLobby" class="btn secondary" disabled>返回等候</button>
+        </div>
+        <h2 class="subhead">座位（最多 2）</h2>
+        <ul id="seatList" class="seat-list"></ul>
+        <p id="liveStatus" class="status" role="status"></p>
+        <p class="note"><a href="./pad.html">打開遙控頁</a>　·　單機舞台仍用 <a href="./stage.html">stage.html</a></p>
+      </aside>
+      <section class="stage-column live-stage-column">
+        <div class="stage-wrap">
+          <canvas id="liveStage" width="900" height="720" aria-label="多人合成舞台"></canvas>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/live/liveMain.js"></script>
+  </body>
+</html>

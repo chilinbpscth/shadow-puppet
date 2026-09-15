@@ -1,0 +1,32 @@
+{
+  "rules": {
+    "shadowLive": {
+      "rooms": {
+        "$roomCode": {
+          ".read": "auth != null && $roomCode.length >= 4 && $roomCode.length <= 8",
+          "meta": {
+            ".write": "auth != null && (!data.exists() || data.child('hostId').val() === auth.uid || newData.child('hostId').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['createdAt', 'hostId', 'status', 'expiresAt']) && newData.child('status').val().matches(/^(lobby|playing|paused)$/)"
+          },
+          "seats": {
+            ".write": "auth != null",
+            "$characterId": {
+              ".validate": "newData.val() === null || (newData.hasChildren(['uid', 'label', 'claimedAt']) && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid)"
+            }
+          },
+          "puppets": {
+            "$characterId": {
+              "pose": {
+                ".write": "auth != null && root.child('shadowLive/rooms/' + $roomCode + '/seats/' + $characterId + '/uid').val() === auth.uid",
+                ".validate": "newData.hasChildren(['x', 'y', 'facing', 'updatedAt']) && newData.child('facing').val().isNumber()"
+              },
+              "art": {
+                ".write": "auth != null && root.child('shadowLive/rooms/' + $roomCode + '/seats/' + $characterId + '/uid').val() === auth.uid"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -32,6 +32,26 @@
 
 新版側身造型暫時只用棍控／關節微調，身體驅動按鈕停用並標示原因；舊造型相機功能保留。相機／實體 iPad／雙指同時操棍未驗收。沒有連續錄影、多角色、登入或藝言堂直接上載。
 
+## 多人舞台 P2a（Firebase）
+
+試玩：1 個主持舞台 + 最多 2 部學生遙控（孫悟空、唐僧）。要上網；單機 `stage.html` 不變。
+
+### 本機測試
+
+```sh
+npm install
+npm run dev
+```
+
+1. 瀏覽器開 [live.html](http://localhost:5173/live.html)（主持／投影）→ 撳「開房」→ 記低大字房間碼。
+2. 另一個視窗／裝置開 [pad.html](http://localhost:5173/pad.html)（或 `pad.html?room=XXXXXX`）→ 輸入房間碼 → 認領空位。
+3. 第二部 pad 認領另一個角色；拖棍／撥轉身，主持畫布應見到最多兩隻偶郁動。
+4. 主持可撳「開始演出」改 `meta.status`（等候室／演出中）。
+
+正式 build：`npm run build` 後 `dist/live.html`、`dist/pad.html`。Firebase 專案 `chilin-shadow-puppet`；設定喺 `src/live/firebaseConfig.js`。課堂要用 Anonymous Auth + Realtime Database（已開）。
+
+限制（P2a）：只同步姿勢數字（x/y/scale/facing／棍 localRot），唔每幀上傳填色圖；座位最多 2。
+
 ## 維護及部署
 
 ```sh
