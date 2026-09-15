@@ -11,7 +11,7 @@ const canvas = document.getElementById('wholeCanvas');
 const ctx = canvas.getContext('2d', {willReadFrequently: true});
 const status = document.getElementById('colorStatus');
 const colors = [['朱紅', '#BC3532'], ['橙', '#E69542'], ['金黃', '#E8BC54'], ['青綠', '#3F887C'], ['藍', '#417BA0'], ['紫', '#895B9A'], ['粉', '#D9879D'], ['褐', '#936B45'], ['白', '#FFFFFF'], ['灰', '#A4A4A4']];
-let data, original, lock, color = colors[0][1], tool = 'brush', size = 10, history = [], drawing = false, previous = null, before = null, touched = 0, revision = 0, savedRevision = 0, pending = 0, queue = Promise.resolve(), ready = false;
+let data, original, lock, color = colors[0][1], tool = 'brush', size = 10, undoStack = [], drawing = false, previous = null, before = null, touched = 0, revision = 0, savedRevision = 0, pending = 0, queue = Promise.resolve(), ready = false;
 let characterId = defaultCharacter().id;
 let characterLabel = defaultCharacter().labelZh;
 
@@ -30,7 +30,7 @@ function fit() {
 }
 function render() {
   ctx.putImageData(data, 0, 0);
-  document.getElementById('undo').disabled = !history.length;
+  document.getElementById('undo').disabled = !undoStack.length;
 }
 function syncTools() {
   for (const id of ['brush', 'fill', 'eraser']) document.getElementById(id).setAttribute('aria-pressed', id === tool);
@@ -73,7 +73,7 @@ function finish() {
   if (!drawing) return;
   drawing = false;
   if (touched) {
-    remember(history, before);
+    remember(undoStack, before);
     revision++;
     save();
   }
@@ -89,7 +89,7 @@ canvas.addEventListener('pointerdown', (ev) => {
   if (tool === 'fill') {
     const n = floodFill(data.data, canvas.width, canvas.height, Math.floor(p.x), Math.floor(p.y), parseHexColor(color), lock);
     if (n) {
-      remember(history, before);
+      remember(undoStack, before);
       revision++;
       render();
       save();
@@ -137,8 +137,8 @@ for (const [label, hex] of colors) {
 }
 document.getElementById('undo').onclick = () => {
   finish();
-  if (history.length) {
-    data = history.pop();
+  if (undoStack.length) {
+    data = undoStack.pop();
     revision++;
     render();
     save();
@@ -208,7 +208,7 @@ async function applyPhotoFile(file) {
     }
     const beforeShot = copy(data);
     data = result;
-    remember(history, beforeShot);
+    remember(undoStack, beforeShot);
     revision++;
     render();
     save(`影完紙稿會套入${characterLabel}輪廓；可再畫筆修改`);
@@ -267,7 +267,9 @@ async function init() {
       await updateProject({characterId: ch.id, assetVersion: ch.assetVersion});
     }
     if (urlChar) {
-      window.history.replaceState(null, '', `?char=${encodeURIComponent(ch.id)}`);
+      const u = new URL(location.href);
+      u.searchParams.set('char', ch.id);
+      window.history.replaceState(null, '', u.pathname + u.search + u.hash);
     }
     syncChrome();
     const template = await loadTemplate(characterId);
