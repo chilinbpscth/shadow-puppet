@@ -124,9 +124,10 @@ const tangsengRegions = [
   {id: 'lowerArmL', labelZh: '左手', pivot: [220.0, 680.0], tip: [100.0, 820.0], parent: 'upperArmL', polygon: [[198.8, 613.3], [12.8, 830.3], [103.2, 907.7], [289.2, 690.7]]},
   {id: 'upperArmL', labelZh: '左上臂', pivot: [420.0, 520.0], tip: [220.0, 680.0], parent: 'torso', polygon: [[446.3, 409.3], [126.3, 665.3], [213.7, 774.7], [533.7, 518.7]]},
   {id: 'lowerArmR', labelZh: '右手', pivot: [820.0, 650.0], tip: [920.0, 760.0], parent: 'upperArmR', polygon: [[756.0, 668.0], [911.0, 838.5], [999.0, 758.5], [844.0, 588.0]]},
-  {id: 'shinL', labelZh: '左小腿', pivot: [350.0, 1120.0], tip: [300.0, 1300.0], parent: 'thighL', polygon: [[295.0, 1065.9], [215.0, 1353.9], [345.0, 1390.1], [425.0, 1102.1]]},
+  // Distal L-leg capsules only — trailing robe hem stays on torso (avoids orphan cut voids).
+  {id: 'shinL', labelZh: '左小腿', pivot: [375.0, 1125.0], tip: [350.0, 1310.0], parent: 'thighL', polygon: [[335.0, 1118.0], [415.0, 1135.0], [400.0, 1320.0], [300.0, 1300.0]]},
   {id: 'shinR', labelZh: '右小腿', pivot: [700.0, 1120.0], tip: [760.0, 1310.0], parent: 'thighR', polygon: [[623.6, 1102.3], [719.6, 1406.3], [848.4, 1365.7], [752.4, 1061.7]]},
-  {id: 'thighL', labelZh: '左腿', pivot: [420.0, 920.0], tip: [350.0, 1120.0], parent: 'torso', polygon: [[377.2, 815.2], [261.7, 1145.2], [403.3, 1194.8], [518.8, 864.8]]},
+  {id: 'thighL', labelZh: '左腿', pivot: [425.0, 960.0], tip: [375.0, 1125.0], parent: 'torso', polygon: [[390.0, 920.0], [500.0, 940.0], [450.0, 1120.0], [340.0, 1100.0]]},
   {id: 'thighR', labelZh: '右腿', pivot: [620.0, 920.0], tip: [700.0, 1120.0], parent: 'torso', polygon: [[518.4, 867.9], [650.4, 1197.9], [789.6, 1142.1], [657.6, 812.1]]},
   {id: 'upperArmR', labelZh: '右上臂', pivot: [680.0, 520.0], tip: [820.0, 650.0], parent: 'torso', polygon: [[583.4, 525.8], [807.4, 733.8], [902.6, 631.2], [678.6, 423.2]]},
   {id: 'torso', labelZh: '身體', pivot: [540.0, 700.0], angle: 0, parent: null, polygon: [[0.0, 0.0], [1024.0, 0.0], [1024.0, 1536.0], [0.0, 1536.0]]},
@@ -269,7 +270,7 @@ export function buildProfileRig(source, characterMeta = null) {
   const designH = DESIGN_CONTENT_BBOX.y1 - DESIGN_CONTENT_BBOX.y0;
   const contentH = Math.max(1, contentBox.y1 - contentBox.y0);
   const ratio = contentH / designH;
-  const blendFloor = ch.id === 'wukong-v2' ? 0 : 26;
+  const blendFloor = ch.id === 'wukong-v2' ? 0 : ch.id === 'tangseng-v1' ? 30 : 26;
   const layers = regions.map(() => new ImageData(w, h));
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++) {

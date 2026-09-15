@@ -135,3 +135,82 @@ for (const id of ['wukong-v2', 'tangseng-v1', 'bajie-v1', 'sha-v1']) {
     }
   });
 }
+
+
+/** First-match ownership then keep largest component per non-torso region (mirrors buildProfileRig cleanup). */
+function opaquePixelsAfterCut(imageData, regions) {
+  const {data, width: w, height: h} = imageData;
+  const owner = new Int32Array(w * h).fill(-1);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      if (!data[i * 4 + 3]) continue;
+      const idx = regions.findIndex((r) => {
+        const poly = r.polygon;
+        let hit = false;
+        for (let a = 0, b = poly.length - 1; a < poly.length; b = a++) {
+          const [x1, y1] = poly[a];
+          const [x2, y2] = poly[b];
+          if (y1 > y !== y2 > y && x < ((x2 - x1) * (y - y1)) / (y2 - y1) + x1) hit = !hit;
+        }
+        return hit;
+      });
+      if (idx >= 0) owner[i] = idx;
+    }
+  const kept = new Uint8Array(w * h);
+  const torsoIdx = regions.findIndex((r) => r.id === 'torso');
+  for (let i = 0; i < w * h; i++) {
+    if (owner[i] === torsoIdx) kept[i] = 1;
+  }
+  for (let ri = 0; ri < regions.length; ri++) {
+    if (ri === torsoIdx || regions[ri].id === 'staff') continue;
+    const seen = new Uint8Array(w * h);
+    const comps = [];
+    for (let start = 0; start < w * h; start++) {
+      if (seen[start] || owner[start] !== ri) continue;
+      const comp = [start];
+      seen[start] = 1;
+      for (let q = 0; q < comp.length; q++) {
+        const at = comp[q];
+        const x = at % w;
+        const y = (at / w) | 0;
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++) {
+            const nx = x + dx;
+            const ny = y + dy;
+            const n = ny * w + nx;
+            if (nx < 0 || nx >= w || ny < 0 || ny >= h || seen[n] || owner[n] !== ri) continue;
+            seen[n] = 1;
+            comp.push(n);
+          }
+      }
+      comps.push(comp);
+    }
+    comps.sort((a, b) => b.length - a.length);
+    if (comps[0]) for (const i of comps[0]) kept[i] = 1;
+  }
+  return {owner, kept, width: w, height: h, data, torsoIdx};
+}
+
+test('tangseng lower robe hem stays on torso without cut voids', () => {
+  const imageData = loadPngImageData('public/characters/tangseng-v1/template.png');
+  const box = opaqueContentBbox(imageData);
+  assert.ok(box);
+  const ch = getCharacter('tangseng-v1');
+  const regions = resolveCutRegions(ch, box, imageData.width, imageData.height);
+  const {kept, data, width: w, owner, torsoIdx} = opaquePixelsAfterCut(imageData, regions);
+  let opaque = 0;
+  let holes = 0;
+  let torsoOwned = 0;
+  for (let y = 950; y <= 1250; y++)
+    for (let x = 80; x <= 340; x++) {
+      const i = y * w + x;
+      if (!data[i * 4 + 3]) continue;
+      opaque++;
+      if (!kept[i]) holes++;
+      if (owner[i] === torsoIdx) torsoOwned++;
+    }
+  assert.ok(opaque > 5000, `robe band opaque=${opaque}`);
+  assert.ok(holes < 50, `robe band cut voids/holes=${holes}`);
+  assert.ok(torsoOwned / opaque > 0.85, `robe band torso share=${torsoOwned}/${opaque}`);
+});
