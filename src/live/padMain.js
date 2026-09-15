@@ -170,8 +170,13 @@ async function applyRigPack(pack, id) {
     if (prevFacing === -1 || prevFacing === 1) manualPose.facing = prevFacing;
     if (prevLocal instanceof Map) manualPose.localRot = new Map(prevLocal);
   } else {
-    if (idx === 0) manualPose.rootX = STAGE_W * 0.32;
-    else if (idx === 1) manualPose.rootX = STAGE_W * 0.68;
+    const n = Math.max(1, ids.length);
+    const i = idx >= 0 ? idx : 0;
+    manualPose.rootX =
+      n === 1
+        ? STAGE_W * 0.5
+        : STAGE_W * (0.14 + (i + 0.5) * (0.72 / n));
+    if (n >= 3) manualPose.scale = 0.5;
   }
   syncArtChrome();
   dirty = true;

@@ -1,5 +1,5 @@
 /**
- * P2a room helpers: 1 host + max 2 pad seats (wukong-v2, tangseng-v1).
+ * P2a room helpers: 1 host + max 4 pad seats (wukong-v2, tangseng-v1, bajie-v1, sha-v1).
  * RTDB: shadowLive/rooms/{ROOM}/meta|seats|puppets
  */
 import { ref, set, get, update, onValue, runTransaction } from 'firebase/database';
@@ -7,7 +7,7 @@ import { getLiveDatabase, ensureAnonAuth } from './firebaseApp.js';
 import { getCharacter, listCharacters } from '../characters.js';
 
 export const P2A_SEAT_IDS = ['wukong-v2', 'tangseng-v1', 'bajie-v1', 'sha-v1'];
-export const MAX_SEATS_P2A = 2;
+export const MAX_SEATS_P2A = 4;
 export const POSE_HZ = 15;
 /** JPEG art for RTDB: keep under ~100KB typical (RTDB soft limit ~10MB/write). */
 export const ART_MAX_WIDTH = 480;
@@ -103,7 +103,7 @@ export async function joinRoom(roomCode) {
 
 /**
  * Claim a seat via per-seat transaction (rules disallow parent seats txn / null stubs).
- * P2a: only seatIdsForP2a() (max 2). Same uid may re-claim; one seat per uid.
+ * P2a: only seatIdsForP2a() (max 4). Same uid may re-claim; one seat per uid.
  */
 export async function claimSeat(roomCode, characterId) {
   const user = await ensureAnonAuth();
@@ -111,17 +111,17 @@ export async function claimSeat(roomCode, characterId) {
   const db = getLiveDatabase();
   const allowed = seatIdsForP2a();
   if (!allowed.includes(characterId)) {
-    const err = new Error('P2a 只開放前兩個角色座位');
+    const err = new Error('呢個角色未開放認領');
     err.code = 'LIVE_SEAT_LOCKED';
     throw err;
   }
 
-  // Soft full-room check (only 2 allowed ids → natural max)
+  // Soft full-room check (allowed ids → natural max)
   const seatsSnap = await get(ref(db, `${roomPath(code)}/seats`));
   const seatsNow = seatsSnap.val() || {};
   const others = allowed.filter((id) => seatsNow[id]?.uid && seatsNow[id].uid !== user.uid);
   if (!seatsNow[characterId]?.uid && others.length >= MAX_SEATS_P2A) {
-    const err = new Error('房間已滿（最多兩人）');
+    const err = new Error('房間已滿（最多四人）');
     err.code = 'LIVE_ROOM_FULL';
     throw err;
   }

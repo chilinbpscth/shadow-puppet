@@ -1,5 +1,5 @@
 /**
- * Host / projector: create room, show code, draw up to 2 puppets from RTDB.
+ * Host / projector: create room, show code, draw up to 4 puppets from RTDB.
  */
 import { drawPuppet } from '../drawPuppet.js';
 import { resolveManualJoints, createManualPose, applyPose } from '../dragPose.js';
@@ -56,12 +56,17 @@ function layoutFor(characterId) {
   const ch = getCharacter(characterId);
   const profile = true;
   const seatIds = seatIdsForP2a();
+  const n = Math.max(1, seatIds.length);
   const idx = Math.max(0, seatIds.indexOf(characterId));
-  const cx = STAGE_W * (seatIds.length === 1 ? 0.5 : idx === 0 ? 0.32 : 0.68);
+  const cx =
+    n === 1
+      ? STAGE_W * 0.5
+      : STAGE_W * (0.14 + (idx + 0.5) * (0.72 / n));
+  const baseScale = n >= 3 ? 0.5 : 0.58;
   return {
     cx,
     cy: STAGE_H * (profile ? 0.43 : 0.52),
-    scale: ch?.kind === 'horse' ? 0.55 : 0.58,
+    scale: ch?.kind === 'horse' ? Math.min(0.55, baseScale) : baseScale,
   };
 }
 
