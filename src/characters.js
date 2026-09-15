@@ -18,7 +18,7 @@ export const CHAR_REGISTRY = [
   {
     id: 'tangseng-v1',
     labelZh: '唐僧',
-    assetVersion: 'tangseng-profile-v1f',
+    assetVersion: 'tangseng-profile-artmatch1',
     templateUrl: './characters/tangseng-v1/template.png',
     lineArtUrl: './print/tangseng-v1-profile-line-a4.svg',
     printUrl: './print/tangseng-v1-profile-line-a4.svg',
@@ -31,7 +31,7 @@ export const CHAR_REGISTRY = [
   {
     id: 'bajie-v1',
     labelZh: '豬八戒',
-    assetVersion: 'bajie-profile-v1f',
+    assetVersion: 'bajie-profile-artmatch1',
     templateUrl: './characters/bajie-v1/template.png',
     lineArtUrl: './print/bajie-v1-profile-line-a4.svg',
     printUrl: './print/bajie-v1-profile-line-a4.svg',
@@ -44,7 +44,7 @@ export const CHAR_REGISTRY = [
   {
     id: 'sha-v1',
     labelZh: '沙僧',
-    assetVersion: 'sha-profile-v1f',
+    assetVersion: 'sha-profile-artmatch1',
     templateUrl: './characters/sha-v1/template.png',
     lineArtUrl: './print/sha-v1-profile-line-a4.svg',
     printUrl: './print/sha-v1-profile-line-a4.svg',

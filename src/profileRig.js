@@ -237,27 +237,36 @@ function cloneRegions(src) {
   }));
 }
 
+/** Design-space content bboxes for native region sets (pre-artmatch1 templates). */
+const NATIVE_DESIGN_BBOX = {
+  'tangseng-v1': {x0: 51, y0: 198, x1: 971, y1: 1336},
+  'bajie-v1': {x0: 51, y0: 431, x1: 971, y1: 1103},
+  'sha-v1': {x0: 51, y0: 330, x1: 971, y1: 1204},
+};
+
 export function resolveCutRegions(ch, contentBox, canvasW, canvasH) {
   const id = ch?.id || 'wukong-v2';
   let regions;
-  let mapped = false;
+  let designBox = null;
   if (id === 'bajie-v1') {
     regions = cloneRegions(bajieRegions);
+    designBox = NATIVE_DESIGN_BBOX['bajie-v1'];
   } else if (id === 'sha-v1') {
     regions = cloneRegions(shaRegions);
+    designBox = NATIVE_DESIGN_BBOX['sha-v1'];
   } else if (id === 'tangseng-v1') {
     regions = cloneRegions(tangsengRegions);
+    designBox = NATIVE_DESIGN_BBOX['tangseng-v1'];
   } else if (id === 'wukong-v2') {
     regions = cloneRegions(wukongRegions);
-    mapped = true;
+    designBox = DESIGN_CONTENT_BBOX;
   } else {
     regions = cloneRegions(wukongRegions.filter((r) => r.id !== 'tail' && r.id !== 'staff'));
-    mapped = true;
+    designBox = DESIGN_CONTENT_BBOX;
   }
-  if (mapped && contentBox) {
-    regions = mapRegionsToContent(regions, DESIGN_CONTENT_BBOX, contentBox, canvasW, canvasH);
+  if (designBox && contentBox) {
+    regions = mapRegionsToContent(regions, designBox, contentBox, canvasW, canvasH);
   } else {
-    // Native sets: still force torso to full canvas
     regions = regions.map((r) =>
       r.id === 'torso'
         ? {...r, polygon: [[0, 0], [canvasW, 0], [canvasW, canvasH], [0, canvasH]]}
