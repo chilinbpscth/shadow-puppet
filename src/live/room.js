@@ -6,7 +6,7 @@ import { ref, set, get, update, onValue, runTransaction } from 'firebase/databas
 import { getLiveDatabase, ensureAnonAuth } from './firebaseApp.js';
 import { getCharacter, listCharacters } from '../characters.js';
 
-export const P2A_SEAT_IDS = ['wukong-v2', 'tangseng-v1'];
+export const P2A_SEAT_IDS = ['wukong-v2', 'tangseng-v1', 'bajie-v1', 'sha-v1'];
 export const MAX_SEATS_P2A = 2;
 export const POSE_HZ = 15;
 /** JPEG art for RTDB: keep under ~100KB typical (RTDB soft limit ~10MB/write). */

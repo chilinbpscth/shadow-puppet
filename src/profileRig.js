@@ -98,9 +98,18 @@ function localPoint(point, pivot, angle) {
   return [dx * Math.cos(angle) + dy * Math.sin(angle), -dx * Math.sin(angle) + dy * Math.cos(angle)];
 }
 
+function regionsForCharacter(ch) {
+  const id = ch?.id || 'wukong-v2';
+  // Same side-view joint layout as Wukong (1024×1536). Drop monkey-only / unmatched props.
+  if (id === 'wukong-v2') return wukongRegions;
+  if (id === 'tangseng-v1') return wukongRegions.filter((r) => r.id !== 'tail' && r.id !== 'staff');
+  if (id === 'bajie-v1' || id === 'sha-v1') return wukongRegions.filter((r) => r.id !== 'tail');
+  return wukongRegions.filter((r) => r.id !== 'tail' && r.id !== 'staff');
+}
+
 export function buildProfileRig(source, characterMeta = null) {
   const ch = characterMeta || getCharacter('wukong-v2');
-  const regions = wukongRegions;
+  const regions = regionsForCharacter(ch);
   const designW = 1024;
   const ratio = source.width / designW;
   const w = source.width;

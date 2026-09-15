@@ -332,9 +332,9 @@ import {
 
 test("character registry has five profile roles with required fields", () => {
   const list = listCharacters();
-  assert.equal(list.length, 5);
+  assert.equal(list.length, 4);
   assert.equal(defaultCharacter().id, "wukong-v2");
-  for (const id of ["wukong-v2", "tangseng-v1", "bajie-v1", "sha-v1", "baima-v1"]) {
+  for (const id of ["wukong-v2", "tangseng-v1", "bajie-v1", "sha-v1"]) {
     const ch = getCharacter(id);
     assert.ok(ch, id);
     assert.ok(ch.labelZh);
@@ -347,7 +347,6 @@ test("character registry has five profile roles with required fields", () => {
     assert.equal(getCharacterByAssetVersion(ch.assetVersion)?.id, id);
     assert.equal(isProfileAssetVersion(ch.assetVersion), true);
   }
-  assert.equal(getCharacter("baima-v1").rodPreset, "horse");
   assert.equal(isProfileAssetVersion("nope"), false);
 });
 

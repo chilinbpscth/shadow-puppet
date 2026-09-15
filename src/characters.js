@@ -1,6 +1,5 @@
 /**
- * P1 multi-character registry (MULTI-CHAR-P1.md).
- * Students pick a character; paint/photo writes [characterId,'whole'].
+ * Classroom characters: 悟空／唐僧／八戒／沙僧（同悟空側身關節皮影做法）
  */
 export const CHAR_REGISTRY = [
   {
@@ -19,52 +18,39 @@ export const CHAR_REGISTRY = [
   {
     id: 'tangseng-v1',
     labelZh: '唐僧',
-    assetVersion: 'tangseng-profile-v1d',
+    assetVersion: 'tangseng-profile-v1e',
     templateUrl: './characters/tangseng-v1/template.png',
     lineArtUrl: './print/tangseng-v1-profile-line-a4.svg',
     printUrl: './print/tangseng-v1-profile-line-a4.svg',
     rodPreset: 'humanoid',
     kind: 'biped',
-    rigMode: 'whole', // P1a: whole silhouette + body rod; P1b articulated
+    rigMode: 'articulated',
     width: 1024,
     height: 1536,
   },
   {
     id: 'bajie-v1',
     labelZh: '豬八戒',
-    assetVersion: 'bajie-profile-v1d',
+    assetVersion: 'bajie-profile-v1e',
     templateUrl: './characters/bajie-v1/template.png',
     lineArtUrl: './print/bajie-v1-profile-line-a4.svg',
     printUrl: './print/bajie-v1-profile-line-a4.svg',
     rodPreset: 'humanoid',
     kind: 'biped',
-    rigMode: 'whole',
+    rigMode: 'articulated',
     width: 1024,
     height: 1536,
   },
   {
     id: 'sha-v1',
     labelZh: '沙僧',
-    assetVersion: 'sha-profile-v1d',
+    assetVersion: 'sha-profile-v1e',
     templateUrl: './characters/sha-v1/template.png',
     lineArtUrl: './print/sha-v1-profile-line-a4.svg',
     printUrl: './print/sha-v1-profile-line-a4.svg',
     rodPreset: 'humanoid',
     kind: 'biped',
-    rigMode: 'whole',
-    width: 1024,
-    height: 1536,
-  },
-  {
-    id: 'baima-v1',
-    labelZh: '白馬',
-    assetVersion: 'baima-profile-v1d',
-    templateUrl: './characters/baima-v1/template.png',
-    lineArtUrl: './print/baima-v1-profile-line-a4.svg',
-    printUrl: './print/baima-v1-profile-line-a4.svg',
-    rodPreset: 'horse',
-    kind: 'horse',
-    rigMode: 'whole', // P1a body rod; P1b head/neck
+    rigMode: 'articulated',
     width: 1024,
     height: 1536,
   },
