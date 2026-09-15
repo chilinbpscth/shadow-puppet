@@ -5,7 +5,7 @@ export const CHAR_REGISTRY = [
   {
     id: 'wukong-v2',
     labelZh: '孫悟空',
-    assetVersion: 'wukong-profile-v2b',
+    assetVersion: 'wukong-profile-v2c',
     templateUrl: './characters/wukong-v2/template.png',
     lineArtUrl: './print/wukong-profile-line-a4.svg',
     printUrl: './print/wukong-profile-line-a4.svg',
@@ -18,7 +18,7 @@ export const CHAR_REGISTRY = [
   {
     id: 'tangseng-v1',
     labelZh: '唐僧',
-    assetVersion: 'tangseng-profile-v1e',
+    assetVersion: 'tangseng-profile-v1f',
     templateUrl: './characters/tangseng-v1/template.png',
     lineArtUrl: './print/tangseng-v1-profile-line-a4.svg',
     printUrl: './print/tangseng-v1-profile-line-a4.svg',
@@ -31,7 +31,7 @@ export const CHAR_REGISTRY = [
   {
     id: 'bajie-v1',
     labelZh: '豬八戒',
-    assetVersion: 'bajie-profile-v1e',
+    assetVersion: 'bajie-profile-v1f',
     templateUrl: './characters/bajie-v1/template.png',
     lineArtUrl: './print/bajie-v1-profile-line-a4.svg',
     printUrl: './print/bajie-v1-profile-line-a4.svg',
@@ -44,7 +44,7 @@ export const CHAR_REGISTRY = [
   {
     id: 'sha-v1',
     labelZh: '沙僧',
-    assetVersion: 'sha-profile-v1e',
+    assetVersion: 'sha-profile-v1f',
     templateUrl: './characters/sha-v1/template.png',
     lineArtUrl: './print/sha-v1-profile-line-a4.svg',
     printUrl: './print/sha-v1-profile-line-a4.svg',

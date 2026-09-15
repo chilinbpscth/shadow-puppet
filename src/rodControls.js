@@ -17,9 +17,9 @@ function rodsForRig(rig) {
     return [{id: 'body', label: '身棍', kind: 'torso', slot: 0.5}];
   }
   return [
-    {id: 'left', label: '空手棍', kind: 'wrist', chain: ['upperArmL', 'lowerArmL'], tip: 'lowerArmL', slot: 0.2},
+    {id: 'left', label: '左手棍', kind: 'wrist', chain: ['upperArmL', 'lowerArmL'], tip: 'lowerArmL', slot: 0.2},
     {id: 'body', label: '身棍', kind: 'torso', slot: 0.5},
-    {id: 'right', label: '持棒手棍', kind: 'wrist', chain: ['upperArmR', 'lowerArmR'], tip: 'lowerArmR', slot: 0.8},
+    {id: 'right', label: '右手棍', kind: 'wrist', chain: ['upperArmR', 'lowerArmR'], tip: 'lowerArmR', slot: 0.8},
   ];
 }
 

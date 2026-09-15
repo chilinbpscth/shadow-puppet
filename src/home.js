@@ -30,7 +30,7 @@ function syncPipelineLinks(ch) {
   const print = document.getElementById('goPrint');
   const hint = document.getElementById('colorHint');
   const startHint = document.getElementById('startHint');
-  const q = `?char=${encodeURIComponent(id)}&v=nobaima1`;
+  const q = `?char=${encodeURIComponent(id)}&v=3rods1`;
   if (color) color.href = `./color.html${q}`;
   if (print) print.href = `./print.html${q}`;
   if (hint) hint.textContent = `畫／影相入${label}`;

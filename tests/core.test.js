@@ -206,14 +206,14 @@ test('dragging root far away is constrained back onto stage', async () => {
 
 test('whole-figure artwork archives with its asset version and returns intact', async () => {
   await archiveAndStart();
-  assert.equal((await readProject()).assetVersion,'wukong-profile-v2b');
+  assert.equal((await readProject()).assetVersion,'wukong-profile-v2c');
   await saveColoredPart('wukong-v2','whole',new Blob(['whole-painted-figure']));
   await updateProject({title:'側身悟空'});
   await archiveAndStart();
   const archive=(await getArchives()).find(x=>x.project.title==='側身悟空');
   assert.equal(archive.project.characterId,'wukong-v2');
   await restoreArchive(archive);
-  assert.equal((await readProject()).assetVersion,'wukong-profile-v2b');
+  assert.equal((await readProject()).assetVersion,'wukong-profile-v2c');
   assert.equal(await(await loadColoredPart('wukong-v2','whole')).text(),'whole-painted-figure');
 });
 
