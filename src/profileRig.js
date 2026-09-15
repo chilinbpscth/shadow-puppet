@@ -101,6 +101,37 @@ function localPoint(point, pivot, angle) {
 /** Wukong silhouette content bbox in design 1024×1536 (after backdrop flood). */
 export const DESIGN_CONTENT_BBOX = {x0: 63, y0: 42, x1: 964, y1: 1494};
 
+/** Reference silhouette height (Wukong). Solo uses baseScale≈0.62 against this height. */
+export const REFERENCE_CONTENT_HEIGHT = DESIGN_CONTENT_BBOX.y1 - DESIGN_CONTENT_BBOX.y0;
+
+/**
+ * Stage pose.scale so bipeds match Wukong on-screen height at `baseScale`.
+ * Templates fill the canvas differently (Wukong ≈ full height; Bajie much smaller),
+ * so the same raw scale makes compact figures look tiny.
+ *
+ * @param {number|{contentHeight?:number,y0?:number,y1?:number}|null|undefined} contentHeightOrRigOrBbox
+ *   Rig with contentHeight, raw height, or {y0,y1} content bbox.
+ * @param {number} [baseScale=0.62]  Solo layoutCenter; live uses 0.58 / 0.5 for multi-seat.
+ * @returns {number}
+ */
+export function normalizedStageScale(contentHeightOrRigOrBbox, baseScale = 0.62) {
+  let h;
+  if (typeof contentHeightOrRigOrBbox === 'number') {
+    h = contentHeightOrRigOrBbox;
+  } else if (contentHeightOrRigOrBbox && typeof contentHeightOrRigOrBbox === 'object') {
+    if (typeof contentHeightOrRigOrBbox.contentHeight === 'number') {
+      h = contentHeightOrRigOrBbox.contentHeight;
+    } else if (
+      typeof contentHeightOrRigOrBbox.y0 === 'number' &&
+      typeof contentHeightOrRigOrBbox.y1 === 'number'
+    ) {
+      h = contentHeightOrRigOrBbox.y1 - contentHeightOrRigOrBbox.y0;
+    }
+  }
+  if (!h || h <= 0) h = REFERENCE_CONTENT_HEIGHT;
+  return baseScale * (REFERENCE_CONTENT_HEIGHT / h);
+}
+
 /** Native template regions (1024×1536 PNG space) for non-Wukong poses.
  * Hand-tuned to each template so waist/shoulder stay on torso; limbs are distal capsules.
  * Tang Seng no longer reuses wukongRegions (robe proportions differ → white holes).
@@ -333,6 +364,8 @@ export function buildProfileRig(source, characterMeta = null) {
     profile: true,
     rodPreset: ch.rodPreset || 'humanoid',
     kind: ch.kind || 'biped',
+    contentHeight: contentH,
+    contentBox: {x0: contentBox.x0, y0: contentBox.y0, x1: contentBox.x1, y1: contentBox.y1},
     parts: [],
   };
   const images = new Map();
@@ -398,7 +431,11 @@ export function buildWholeFigureRig(source, ch) {
   const partCanvas = document.createElement('canvas');
   partCanvas.width = w;
   partCanvas.height = h;
-  partCanvas.getContext('2d').drawImage(source, 0, 0);
+  const sctx = partCanvas.getContext('2d');
+  sctx.drawImage(source, 0, 0);
+  const pixels = sctx.getImageData(0, 0, w, h);
+  const contentBox = opaqueContentBbox(pixels) || {x0: 0, y0: 0, x1: w - 1, y1: h - 1};
+  const contentH = Math.max(1, contentBox.y1 - contentBox.y0);
   const pivotX = 0.5;
   const pivotY = ch.kind === 'horse' ? 0.5 : 0.42;
   const rig = {
@@ -409,6 +446,8 @@ export function buildWholeFigureRig(source, ch) {
     wholeFigure: true,
     rodPreset: ch.rodPreset || (ch.kind === 'horse' ? 'horse' : 'humanoid'),
     kind: ch.kind || 'biped',
+    contentHeight: contentH,
+    contentBox: {x0: contentBox.x0, y0: contentBox.y0, x1: contentBox.x1, y1: contentBox.y1},
     parts: [
       {
         id: 'torso',

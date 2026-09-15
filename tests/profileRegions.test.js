@@ -56,6 +56,8 @@ const {
   resolveCutRegions,
   countRegionPixels,
   DESIGN_CONTENT_BBOX,
+  normalizedStageScale,
+  REFERENCE_CONTENT_HEIGHT,
 } = await import('../src/profileRig.js');
 const {getCharacter} = await import('../src/characters.js');
 
@@ -213,4 +215,28 @@ test('tangseng lower robe hem stays on torso without cut voids', () => {
   assert.ok(opaque > 5000, `robe band opaque=${opaque}`);
   assert.ok(holes < 50, `robe band cut voids/holes=${holes}`);
   assert.ok(torsoOwned / opaque > 0.85, `robe band torso share=${torsoOwned}/${opaque}`);
+});
+
+test('normalizedStageScale keeps wukong at baseScale', () => {
+  assert.equal(normalizedStageScale(REFERENCE_CONTENT_HEIGHT, 0.62), 0.62);
+  assert.equal(normalizedStageScale({contentHeight: REFERENCE_CONTENT_HEIGHT}, 0.58), 0.58);
+  assert.equal(normalizedStageScale(null, 0.62), 0.62);
+});
+
+test('normalizedStageScale boosts compact templates toward wukong height', () => {
+  // Measured fills (contentH / canvasH) ≈ bajie 0.42, sha 0.57, tangseng 0.74
+  const bajieH = 643;
+  const shaH = 873;
+  const tangH = 1138;
+  const base = 0.62;
+  const bajie = normalizedStageScale(bajieH, base);
+  const sha = normalizedStageScale(shaH, base);
+  const tang = normalizedStageScale(tangH, base);
+  assert.ok(bajie > sha && sha > tang && tang > base);
+  // On-screen height ≈ contentH * scale should match reference * base
+  const target = REFERENCE_CONTENT_HEIGHT * base;
+  assert.ok(Math.abs(bajieH * bajie - target) < 1e-6);
+  assert.ok(Math.abs(shaH * sha - target) < 1e-6);
+  assert.ok(Math.abs(tangH * tang - target) < 1e-6);
+  assert.equal(normalizedStageScale({y0: 10, y1: 10 + bajieH}, base), bajie);
 });

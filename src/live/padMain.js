@@ -7,7 +7,7 @@ import {
   resolveManualJoints,
   constrainPose,
 } from '../dragPose.js';
-import { loadProfileRig, loadTemplate } from '../profileRig.js';
+import { loadProfileRig, loadTemplate, normalizedStageScale } from '../profileRig.js';
 import { createRodControls } from '../rodControls.js';
 import { getCharacter } from '../characters.js';
 import { loadColoredPart, blobToImage } from '../colorStorage.js';
@@ -74,8 +74,13 @@ function show(panel) {
   }
 }
 
-function layoutCenter() {
-  return { cx: STAGE_W / 2, cy: STAGE_H * 0.43, scale: 0.62 };
+function layoutCenter(rig = null) {
+  const source = rig || rigPack?.rig || null;
+  return {
+    cx: STAGE_W / 2,
+    cy: STAGE_H * 0.43,
+    scale: normalizedStageScale(source, 0.62),
+  };
 }
 
 function cleanup() {
@@ -155,7 +160,7 @@ function syncArtChrome() {
 async function applyRigPack(pack, id) {
   rigPack = pack;
   hasLocalArt = !!pack.hasColored;
-  const layout = layoutCenter();
+  const layout = layoutCenter(rigPack.rig);
   const prevFacing = manualPose?.facing;
   const prevRootX = manualPose?.rootX;
   const prevRootY = manualPose?.rootY;
@@ -177,7 +182,9 @@ async function applyRigPack(pack, id) {
       n === 1
         ? STAGE_W * 0.5
         : STAGE_W * (0.14 + (i + 0.5) * (0.72 / n));
-    if (n >= 3) manualPose.scale = 0.5;
+    // Match live multi-seat baseScale; still normalize by content height
+    if (n >= 3) manualPose.scale = normalizedStageScale(rigPack.rig, 0.5);
+    else if (n >= 2) manualPose.scale = normalizedStageScale(rigPack.rig, 0.58);
   }
   syncArtChrome();
   dirty = true;

@@ -8,6 +8,7 @@ import {
   buildProfileRig,
   buildWholeFigureRig,
   loadTemplate,
+  normalizedStageScale,
 } from '../profileRig.js';
 import { getCharacter } from '../characters.js';
 import {
@@ -53,7 +54,7 @@ function setStatus(msg, isError = false) {
   els.status.classList.toggle('is-error', !!isError);
 }
 
-function layoutFor(characterId) {
+function layoutFor(characterId, rig = null) {
   const ch = getCharacter(characterId);
   const profile = true;
   const seatIds = seatIdsForP2a();
@@ -64,17 +65,24 @@ function layoutFor(characterId) {
       ? STAGE_W * 0.5
       : STAGE_W * (0.14 + (idx + 0.5) * (0.72 / n));
   const baseScale = n >= 3 ? 0.5 : 0.58;
+  let scale;
+  if (ch?.kind === 'horse') {
+    scale = Math.min(0.55, baseScale);
+  } else {
+    const source = rig || puppets.get(characterId)?.rig || null;
+    scale = normalizedStageScale(source, baseScale);
+  }
   return {
     cx,
     cy: STAGE_H * (profile ? 0.43 : 0.52),
-    scale: ch?.kind === 'horse' ? Math.min(0.55, baseScale) : baseScale,
+    scale,
   };
 }
 
 async function ensurePuppetAssets(characterId) {
   if (puppets.has(characterId)) return puppets.get(characterId);
   const loaded = await loadProfileRig(false, characterId);
-  const layout = layoutFor(characterId);
+  const layout = layoutFor(characterId, loaded.rig);
   const pose = createManualPose(loaded.rig, layout);
   const entry = { rig: loaded.rig, images: loaded.images, pose, artUpdatedAt: 0 };
   puppets.set(characterId, entry);
@@ -148,7 +156,7 @@ function applyRemotePose(characterId, payload) {
   if (!entry || !payload?.pose) return;
   const fields = payloadToPoseFields(payload.pose);
   if (!fields) return;
-  const layout = layoutFor(characterId);
+  const layout = layoutFor(characterId, entry.rig);
   // Keep default scale if remote sends 0
   if (!fields.scale) fields.scale = layout.scale;
   applyPose(entry.pose, fields);

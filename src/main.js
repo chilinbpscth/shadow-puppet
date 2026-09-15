@@ -15,6 +15,7 @@ import {
 } from './dragPose.js';
 import { applyPreset, getPreset } from './posePresets.js';
 import { createRodControls } from './rodControls.js';
+import { normalizedStageScale } from './profileRig.js';
 
 const canvas = document.getElementById('stage');
 const ctx = canvas.getContext('2d');
@@ -113,7 +114,17 @@ function setStatus(msg, isError = false) {
 }
 
 function layoutCenter() {
-  return { cx: canvas.width / 2, cy: canvas.height * (state?.rig.profile ? .43 : .52), scale: state?.rig.profile ? .62 : .8 };
+  const profile = !!state?.rig?.profile;
+  const baseScale = profile ? 0.62 : 0.8;
+  const scale =
+    profile && state?.rig?.kind !== 'horse'
+      ? normalizedStageScale(state.rig, baseScale)
+      : baseScale;
+  return {
+    cx: canvas.width / 2,
+    cy: canvas.height * (profile ? 0.43 : 0.52),
+    scale,
+  };
 }
 
 function fillPartList(rig) {
