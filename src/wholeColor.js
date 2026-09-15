@@ -267,7 +267,7 @@ async function init() {
       await updateProject({characterId: ch.id, assetVersion: ch.assetVersion});
     }
     if (urlChar) {
-      history.replaceState(null, '', `?char=${encodeURIComponent(ch.id)}`);
+      window.history.replaceState(null, '', `?char=${encodeURIComponent(ch.id)}`);
     }
     syncChrome();
     const template = await loadTemplate(characterId);
