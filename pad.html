@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>皮影戲・遙控（學生）</title>
+    <script type="module" crossorigin src="./assets/pad-t2Ac2rjS.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/characters-B1I5gOZp.js">
+    <link rel="modulepreload" crossorigin href="./assets/profileRig-BDjRecVu.js">
+    <link rel="modulepreload" crossorigin href="./assets/stageBackdrop-H-fHxqQR.js">
+    <link rel="modulepreload" crossorigin href="./assets/drawPuppet-DatklLZt.js">
+    <link rel="modulepreload" crossorigin href="./assets/rodControls-G3GzOmqi.js">
+    <link rel="modulepreload" crossorigin href="./assets/projectStorage-2-uXUYCK.js">
+    <link rel="stylesheet" crossorigin href="./assets/profileRig-DHsqW2BJ.css">
+    <link rel="stylesheet" crossorigin href="./assets/stageBackdrop-DzWgTtts.css">
+  </head>
+  <body class="live-page pad-page">
+    <header class="topbar">
+      <a href="./index.html">‹ 首頁</a>
+      <span class="seal">影</span>
+      <strong>③ 遙控・學生</strong>
+      <span id="padPhase" class="phase-pill">入場</span>
+    </header>
+    <p id="padStatus" class="status" role="status" style="text-align:center"></p>
+
+    <section id="joinPanel" class="pad-panel">
+      <h2>輸入房間碼</h2>
+      <p class="note">睇老師／投影螢幕上嘅大字碼</p>
+      <label class="room-input-label">
+        房間碼
+        <input id="roomInput" maxlength="8" autocomplete="off" spellcheck="false" placeholder="例如 K7P2QM" aria-label="房間碼" />
+      </label>
+      <button type="button" id="btnJoin" class="btn">入場</button>
+      </section>
+
+    <section id="seatPanel" class="pad-panel" hidden>
+      <h2>揀角色座位</h2>
+      <p class="note">P2a：最多兩人；已佔座位唔可以搶</p>
+      <div id="seatButtons" class="seat-buttons"></div>
+      <p class="status" role="status">認領後載入作品，再推上舞台操棍</p>
+    </section>
+
+    <section id="playPanel" class="pad-play" hidden>
+      <p class="pad-char"><span id="charLabel">—</span>　拖棍推提；撥轉身</p>
+      <div class="art-steps" aria-label="作品步驟">
+        <p class="art-steps-title">課堂流程</p>
+        <div class="art-actions">
+          <a class="btn" id="btnColor" href="./color.html">填色／影相</a>
+          <a class="btn secondary" id="btnPrint" href="./print.html">列印線稿</a>
+          <button type="button" class="btn secondary" id="btnReloadArt">重新載入我嘅作品</button>
+          <button type="button" class="btn" id="btnPublishArt">推上舞台</button>
+        </div>
+        <p id="artHint" class="note art-hint">認領後會試載入本機 IndexedDB 作品</p>
+      </div>
+      <div class="stage-column">
+        <div class="stage-wrap shadow-proscenium">
+          <canvas id="padStage" width="900" height="720" aria-label="你的影偶預覽"></canvas>
+        </div>
+        <div class="rod-toolbar" id="rodToolbar">
+          <p class="rod-instruction">捉住粗棍柄推、提；放手即停。</p>
+          <div id="rodRail" class="rod-rail" aria-label="虛擬棍"></div>
+          <label class="rod-turn">向左 <input id="rodTurn" type="range" min="-100" max="100" value="100" aria-label="轉動身棍" /> 向右 <span>撥轉身棍</span></label>
+        </div>
+      </div>
+      <p class="status note">姿勢會同步到舞台（約每秒 15 次）；作品圖按「推上舞台」上傳一次</p>
+    </section>
+
+  </body>
+</html>

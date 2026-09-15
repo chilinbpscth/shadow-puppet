@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>畫影偶・皮影戲</title>  <script type="module" crossorigin src="./assets/color-hQs5njc_.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/characters-B1I5gOZp.js">
+  <link rel="modulepreload" crossorigin href="./assets/profileRig-BDjRecVu.js">
+  <link rel="modulepreload" crossorigin href="./assets/projectStorage-2-uXUYCK.js">
+  <link rel="modulepreload" crossorigin href="./assets/loadRig-DaHGukC2.js">
+  <link rel="modulepreload" crossorigin href="./assets/undoHistory-DDcrJpP2.js">
+  <link rel="stylesheet" crossorigin href="./assets/profileRig-DHsqW2BJ.css">
+</head>
+<body class="color-page whole-mode">
+<header class="topbar"><a id="backHome" href="./index.html">‹ 首頁</a><span class="seal">影</span><strong id="colorTitle">畫你的影偶</strong><span class="step-badge">① 填色／影相 → ② 舞台 → ③ live</span></header>
+<p class="whole-intro" id="colorIntro">在完整影偶上直接填色、畫花紋；亦可影紙稿入偶。喜歡就上幕，不用填滿。</p>
+<main class="whole-workspace">
+<aside class="art-reference" id="refAside"><h2>配色參考</h2><div class="reference-crop"><img id="refImage" src="./characters/wukong-v2/reference.png" alt="側身彩色造型參考"></div><p id="refHint">選幾種喜歡的顏色，<br>畫出自己的影偶。</p></aside>
+<section class="whole-paper" id="wholeWrap"><canvas id="wholeCanvas" aria-label="完整影偶填畫畫布"></canvas></section>
+</main>
+<p id="colorStatus" class="status" role="status">載入線稿…</p>
+<footer class="whole-tools">
+  <div class="tool-row"><button id="brush" aria-pressed="true">畫筆</button><button id="fill" aria-pressed="false">填色</button><button id="eraser" aria-pressed="false">橡皮</button></div>
+  <div class="tool-row" aria-label="筆粗"><button data-size="4">細</button><button data-size="10" aria-pressed="true">中</button><button data-size="22">大</button></div>
+  <div id="wholePalette" class="palette" aria-label="色板"></div>
+  <div class="tool-row photo-entry-row" aria-label="影相入偶">
+    <button type="button" id="photoEntry">影相入偶</button>
+    <span id="photoChooser" class="photo-chooser" hidden>
+      <button type="button" id="photoCamera">用相機</button>
+      <button type="button" id="photoAlbum">用相簿</button>
+    </span>
+    <a class="btn" id="printOutline" href="./print.html">列印線稿</a>
+  </div>
+  <input id="photoCameraInput" type="file" accept="image/*" capture="environment" hidden aria-hidden="true">
+  <input id="photoAlbumInput" type="file" accept="image/*" hidden aria-hidden="true">
+  <button id="undo" disabled>復原</button>
+  <button id="retry" hidden>重試儲存</button>
+  <a class="btn primary-done" id="enterStage" href="./stage.html?v=3rods1">② 上單機舞台 →</a> <a class="btn" id="enterLive" href="./live.html">③ 多人 live</a>
+</footer>
+</body></html>
