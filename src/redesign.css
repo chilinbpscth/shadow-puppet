@@ -704,12 +704,13 @@ dialog::backdrop {
   width: 56px;
   height: 84px;
   object-fit: contain;
-  background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 50% / 12px 12px;
+  background: #efe6d6;
   border-radius: 6px;
 }
 .char-card strong {
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 .char-card.is-selected {
   border-color: #bc3532;
@@ -828,3 +829,7 @@ dialog::backdrop {
     grid-template-columns: 1fr;
   }
 }
+
+body.home-page{overflow:auto;height:auto;min-height:100dvh}
+.home{margin:3vh auto 4vh;text-align:center}
+.char-grid{margin-left:auto;margin-right:auto}

@@ -891,7 +891,7 @@ function updateColorNotice(hasColored) {
     notice.classList.add('has-colored');
     textEl.textContent = '\u5df2\u8f09\u5165\u4f60\u7684\u586b\u8272';
     const edit = document.createElement('a');
-    edit.href = './color.html';
+    edit.href = `./color.html?char=${encodeURIComponent(state?.rig?.id || '')}`;
     edit.className = 'btn-inline secondary';
     edit.textContent = '\u518d\u6539\u586b\u8272';
     actions.appendChild(edit);
@@ -900,7 +900,7 @@ function updateColorNotice(hasColored) {
     textEl.textContent =
       '\u9084\u6c92\u6709\u586b\u8272\u4f5c\u54c1 \u2014 \u5148\u70ba\u5b6b\u609f\u7a7a\u7684\u8eab\u6bb5\u586b\u8272\uff0c\u518d\u56de\u4f86\u64fa\u59ff\u52e2\u3002';
     const go = document.createElement('a');
-    go.href = './color.html';
+    go.href = `./color.html?char=${encodeURIComponent(state?.rig?.id || '')}`;
     go.className = 'btn-inline';
     go.textContent = '\u5148\u53bb\u586b\u8272';
     actions.appendChild(go);

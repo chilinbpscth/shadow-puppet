@@ -255,12 +255,19 @@ async function init() {
       location.replace('./legacy-color.html');
       return;
     }
-    characterId = project.characterId || defaultCharacter().id;
+    const params = new URLSearchParams(location.search);
+    const fromUrl = params.get('char');
+    const urlChar = fromUrl && getCharacter(fromUrl) ? getCharacter(fromUrl) : null;
+    // URL 揀角優先：首頁轉角色後 ?char= 一定要換模板／影相格
+    characterId = (urlChar || getCharacter(project.characterId) || defaultCharacter()).id;
     const ch = getCharacter(characterId) || defaultCharacter();
     characterId = ch.id;
     characterLabel = ch.labelZh;
     if (project.characterId !== ch.id || project.assetVersion !== ch.assetVersion) {
       await updateProject({characterId: ch.id, assetVersion: ch.assetVersion});
+    }
+    if (urlChar) {
+      history.replaceState(null, '', `?char=${encodeURIComponent(ch.id)}`);
     }
     syncChrome();
     const template = await loadTemplate(characterId);

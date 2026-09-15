@@ -49,7 +49,7 @@ function renderCharGrid() {
     btn.setAttribute('aria-selected', ch.id === selectedId ? 'true' : 'false');
     btn.dataset.characterId = ch.id;
     btn.innerHTML = `<img src="${ch.templateUrl}" alt="" width="72" height="108" loading="lazy"><strong>${ch.labelZh}</strong>`;
-    btn.onclick = () => {
+    btn.onclick = async () => {
       selectedId = ch.id;
       for (const el of grid.querySelectorAll('.char-card')) {
         const on = el.dataset.characterId === selectedId;
@@ -57,6 +57,12 @@ function renderCharGrid() {
         el.setAttribute('aria-selected', on ? 'true' : 'false');
       }
       syncPipelineLinks(ch);
+      try {
+        await updateProject({characterId: ch.id, assetVersion: ch.assetVersion});
+        status.textContent = `已揀${ch.labelZh}・①填色／影相會用呢隻`;
+      } catch (e) {
+        status.textContent = '未能記住角色：' + e.message;
+      }
     };
     grid.append(btn);
   }
