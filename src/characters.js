@@ -31,7 +31,7 @@ export const CHAR_REGISTRY = [
   {
     id: 'bajie-v1',
     labelZh: '豬八戒',
-    assetVersion: 'bajie-profile-artmatch1',
+    assetVersion: 'bajie-profile-bajiefix1',
     templateUrl: './characters/bajie-v1/template.png',
     lineArtUrl: './print/bajie-v1-profile-line-a4.svg',
     printUrl: './print/bajie-v1-profile-line-a4.svg',

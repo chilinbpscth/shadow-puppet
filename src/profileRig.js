@@ -137,17 +137,18 @@ export function normalizedStageScale(contentHeightOrRigOrBbox, baseScale = 0.62)
  * Tang Seng no longer reuses wukongRegions (robe proportions differ → white holes).
  */
 const bajieRegions = [
-  {id: 'head', labelZh: '頭', pivot: [320.0, 560.0], angle: 0, parent: 'torso', polygon: [[200.0, 430.0], [480.0, 430.0], [480.0, 600.0], [350.0, 600.0], [200.0, 600.0]]},
-  {id: 'lowerArmL', labelZh: '左手', pivot: [150.0, 760.0], tip: [90.0, 900.0], parent: 'upperArmL', polygon: [[119.0, 713.6], [26.0, 930.6], [112.0, 967.4], [205.0, 750.4]]},
-  {id: 'upperArmL', labelZh: '左上臂', pivot: [240.0, 620.0], tip: [150.0, 760.0], parent: 'torso', polygon: [[225.2, 541.3], [81.2, 765.3], [173.8, 824.7], [317.8, 600.7]]},
-  {id: 'lowerArmR', labelZh: '右手', pivot: [490.0, 700.0], tip: [560.0, 820.0], parent: 'upperArmR', polygon: [[435.6, 699.6], [544.1, 885.6], [624.9, 838.4], [516.4, 652.4]]},
-  {id: 'shinL', labelZh: '左小腿', pivot: [200.0, 970.0], tip: [140.0, 1060.0], parent: 'thighL', polygon: [[170.8, 924.5], [74.8, 1068.5], [157.2, 1123.5], [253.2, 979.5]]},
-  {id: 'shinR', labelZh: '右小腿', pivot: [430.0, 980.0], tip: [450.0, 1065.0], parent: 'thighR', polygon: [[377.8, 974.3], [409.8, 1110.3], [506.2, 1087.7], [474.2, 951.7]]},
-  {id: 'thighL', labelZh: '左腿', pivot: [270.0, 870.0], tip: [200.0, 970.0], parent: 'torso', polygon: [[252.9, 798.5], [137.4, 963.5], [227.6, 1026.5], [343.1, 861.5]]},
-  {id: 'thighR', labelZh: '右腿', pivot: [400.0, 875.0], tip: [430.0, 980.0], parent: 'torso', polygon: [[335.1, 848.1], [384.6, 1021.4], [490.4, 991.1], [440.9, 817.9]]},
-  {id: 'staff', labelZh: '九齒釘耙', pivot: [600.0, 700.0], angle: 0, parent: 'lowerArmR', polygon: [[555.0, 200.0], [655.0, 200.0], [645.0, 1400.0], [545.0, 1400.0]]},
-  {id: 'upperArmR', labelZh: '右上臂', pivot: [400.0, 610.0], tip: [490.0, 700.0], parent: 'torso', polygon: [[329.6, 617.4], [473.6, 761.4], [551.4, 683.6], [407.4, 539.6]]},
-  {id: 'torso', labelZh: '身體', pivot: [340.0, 730.0], angle: 0, parent: null, polygon: [[0.0, 0.0], [1024.0, 0.0], [1024.0, 1536.0], [0.0, 1536.0]]},
+  // artmatch1 silhouette (content ≈49,248–974,1286): distal capsules only — waist/belly stay on torso
+  {id: 'head', labelZh: '頭', pivot: [430.0, 400.0], angle: 0, parent: 'torso', polygon: [[310.0, 250.0], [545.0, 255.0], [555.0, 400.0], [490.0, 480.0], [350.0, 485.0], [295.0, 380.0]]},
+  {id: 'lowerArmL', labelZh: '左手', pivot: [160.0, 820.0], tip: [90.0, 940.0], parent: 'upperArmL', polygon: [[132.2, 792.2], [52.1, 929.5], [117.8, 967.8], [197.9, 830.5]]},
+  {id: 'upperArmL', labelZh: '左上臂', pivot: [250.0, 680.0], tip: [160.0, 820.0], parent: 'torso', polygon: [[221.8, 650.0], [120.9, 806.8], [188.2, 850.0], [289.1, 693.2]]},
+  {id: 'lowerArmR', labelZh: '右手', pivot: [720.0, 450.0], tip: [850.0, 370.0], parent: 'upperArmR', polygon: [[732.4, 489.3], [879.5, 398.8], [837.6, 330.7], [690.5, 421.2]]},
+  {id: 'shinL', labelZh: '左小腿', pivot: [300.0, 1150.0], tip: [280.0, 1270.0], parent: 'thighL', polygon: [[258.2, 1132.9], [235.0, 1272.6], [321.8, 1287.1], [345.0, 1147.4]]},
+  {id: 'shinR', labelZh: '右小腿', pivot: [590.0, 1150.0], tip: [610.0, 1270.0], parent: 'thighR', polygon: [[545.0, 1147.4], [568.2, 1287.1], [655.0, 1272.6], [631.8, 1132.9]]},
+  {id: 'thighL', labelZh: '左腿', pivot: [370.0, 1020.0], tip: [300.0, 1150.0], parent: 'torso', polygon: [[334.2, 989.4], [254.8, 1137.0], [335.8, 1180.6], [415.2, 1033.0]]},
+  {id: 'thighR', labelZh: '右腿', pivot: [550.0, 1020.0], tip: [590.0, 1150.0], parent: 'torso', polygon: [[503.1, 1024.0], [549.0, 1173.1], [636.9, 1146.0], [591.0, 996.9]]},
+  {id: 'staff', labelZh: '九齒釘耙', pivot: [900.0, 390.0], angle: 0, parent: 'lowerArmR', polygon: [[790.0, 255.0], [974.0, 255.0], [974.0, 490.0], [820.0, 490.0], [790.0, 400.0]]},
+  {id: 'upperArmR', labelZh: '右上臂', pivot: [580.0, 560.0], tip: [720.0, 450.0], parent: 'torso', polygon: [[598.1, 599.2], [753.8, 476.8], [701.9, 410.8], [546.2, 533.2]]},
+  {id: 'torso', labelZh: '身體', pivot: [450.0, 780.0], angle: 0, parent: null, polygon: [[0.0, 0.0], [1024.0, 0.0], [1024.0, 1536.0], [0.0, 1536.0]]},
 ];
 
 const tangsengRegions = [
@@ -240,7 +241,7 @@ function cloneRegions(src) {
 /** Design-space content bboxes for native region sets (pre-artmatch1 templates). */
 const NATIVE_DESIGN_BBOX = {
   'tangseng-v1': {x0: 51, y0: 198, x1: 971, y1: 1336},
-  'bajie-v1': {x0: 51, y0: 431, x1: 971, y1: 1103},
+  'bajie-v1': {x0: 49, y0: 248, x1: 974, y1: 1286},
   'sha-v1': {x0: 51, y0: 330, x1: 971, y1: 1204},
 };
 
@@ -310,7 +311,7 @@ export function buildProfileRig(source, characterMeta = null) {
   const designH = DESIGN_CONTENT_BBOX.y1 - DESIGN_CONTENT_BBOX.y0;
   const contentH = Math.max(1, contentBox.y1 - contentBox.y0);
   const ratio = contentH / designH;
-  const blendFloor = ch.id === 'wukong-v2' ? 0 : ch.id === 'tangseng-v1' ? 30 : 26;
+  const blendFloor = ch.id === 'wukong-v2' ? 0 : ch.id === 'tangseng-v1' ? 30 : ch.id === 'bajie-v1' ? 32 : 26;
   const layers = regions.map(() => new ImageData(w, h));
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++) {
