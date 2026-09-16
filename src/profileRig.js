@@ -78,7 +78,7 @@ const wukongRegions = [
   {id: 'thighL', labelZh: '左腿', pivot: [569, 886], tip: [450, 1055], parent: 'torso', polygon: [[437, 928], [591, 865], [596, 951], [540, 1033], [481, 1075], [421, 1061], [401, 1006], [402, 957]]},
   {id: 'thighR', labelZh: '右腿', pivot: [638, 888], tip: [699, 1055], parent: 'torso', polygon: [[587, 900], [706, 924], [741, 978], [749, 1030], [725, 1078], [672, 1072], [627, 1040], [591, 961]]},
   {id: 'tail', labelZh: '尾巴', pivot: [414, 956], angle: 0, parent: 'torso', polygon: [[409, 941], [425, 961], [359, 1055], [291, 1120], [189, 1159], [80, 1128], [51, 1080], [48, 996], [93, 945], [145, 935], [170, 972], [120, 1017], [110, 1045], [157, 1090], [226, 1097], [307, 1056]]},
-  {id: 'upperArmR', labelZh: '右上臂', pivot: [644, 480], tip: [724, 587], parent: 'torso', polygon: [[656, 489], [691, 505], [751, 564], [725, 615], [690, 625], [670, 577]]},
+  {id: 'upperArmR', labelZh: '右上臂', pivot: [644, 480], tip: [724, 587], parent: 'torso', polygon: [[628, 463], [681, 480], [758, 552], [752, 604], [718, 634], [674, 620], [646, 565]]},
   {id: 'staff', labelZh: '金箍棒', pivot: [919, 568], angle: 0, parent: 'lowerArmR', polygon: [[892, 95], [977, 95], [977, 1400], [879, 1400]]},
   {id: 'torso', labelZh: '身體', pivot: [644, 640], angle: 0, parent: null, polygon: [[0, 0], [1024, 0], [1024, 1536], [0, 1536]]},
 ];
@@ -152,31 +152,32 @@ const bajieRegions = [
 ];
 
 const tangsengRegions = [
-  {id: 'head', labelZh: '頭', pivot: [560.0, 430.0], angle: 0, parent: 'torso', polygon: [[480.0, 200.0], [720.0, 200.0], [720.0, 450.0], [590.0, 470.0], [480.0, 450.0]]},
-  {id: 'lowerArmL', labelZh: '左手', pivot: [220.0, 680.0], tip: [100.0, 820.0], parent: 'upperArmL', polygon: [[198.8, 613.3], [12.8, 830.3], [103.2, 907.7], [289.2, 690.7]]},
-  {id: 'upperArmL', labelZh: '左上臂', pivot: [420.0, 520.0], tip: [220.0, 680.0], parent: 'torso', polygon: [[446.3, 409.3], [126.3, 665.3], [213.7, 774.7], [533.7, 518.7]]},
-  {id: 'lowerArmR', labelZh: '右手', pivot: [820.0, 650.0], tip: [920.0, 760.0], parent: 'upperArmR', polygon: [[756.0, 668.0], [911.0, 838.5], [999.0, 758.5], [844.0, 588.0]]},
-  // Distal L-leg capsules only — trailing robe hem stays on torso (avoids orphan cut voids).
-  {id: 'shinL', labelZh: '左小腿', pivot: [375.0, 1125.0], tip: [350.0, 1310.0], parent: 'thighL', polygon: [[335.0, 1118.0], [415.0, 1135.0], [400.0, 1320.0], [300.0, 1300.0]]},
-  {id: 'shinR', labelZh: '右小腿', pivot: [700.0, 1120.0], tip: [760.0, 1310.0], parent: 'thighR', polygon: [[623.6, 1102.3], [719.6, 1406.3], [848.4, 1365.7], [752.4, 1061.7]]},
-  {id: 'thighL', labelZh: '左腿', pivot: [425.0, 960.0], tip: [375.0, 1125.0], parent: 'torso', polygon: [[390.0, 920.0], [500.0, 940.0], [450.0, 1120.0], [340.0, 1100.0]]},
-  {id: 'thighR', labelZh: '右腿', pivot: [620.0, 920.0], tip: [700.0, 1120.0], parent: 'torso', polygon: [[518.4, 867.9], [650.4, 1197.9], [789.6, 1142.1], [657.6, 812.1]]},
-  {id: 'upperArmR', labelZh: '右上臂', pivot: [680.0, 520.0], tip: [820.0, 650.0], parent: 'torso', polygon: [[583.4, 525.8], [807.4, 733.8], [902.6, 631.2], [678.6, 423.2]]},
-  {id: 'torso', labelZh: '身體', pivot: [540.0, 700.0], angle: 0, parent: null, polygon: [[0.0, 0.0], [1024.0, 0.0], [1024.0, 1536.0], [0.0, 1536.0]]},
+  // artmatch1: narrow distal capsules follow the printed joint lines; flowing robe stays on torso.
+  {id: 'head', labelZh: '頭', pivot: [585, 445], angle: 0, parent: 'torso', polygon: [[445, 92], [680, 92], [690, 455], [610, 505], [495, 465], [430, 300]]},
+  {id: 'lowerArmL', labelZh: '左手', pivot: [348, 700], tip: [405, 895], parent: 'upperArmL', polygon: [[303, 705], [368, 925], [444, 903], [379, 683]]},
+  {id: 'upperArmL', labelZh: '左上臂', pivot: [445, 475], tip: [348, 700], parent: 'torso', polygon: [[409, 451], [307, 688], [389, 723], [491, 486]]},
+  {id: 'lowerArmR', labelZh: '右手', pivot: [700, 650], tip: [823, 735], parent: 'upperArmR', polygon: [[673, 688], [806, 780], [852, 714], [719, 622]]},
+  {id: 'shinL', labelZh: '左小腿', pivot: [350, 1260], tip: [330, 1385], parent: 'thighL', polygon: [[313, 1248], [292, 1395], [369, 1407], [390, 1260]]},
+  {id: 'shinR', labelZh: '右小腿', pivot: [700, 1260], tip: [760, 1365], parent: 'thighR', polygon: [[666, 1271], [728, 1380], [792, 1344], [730, 1235]]},
+  {id: 'thighL', labelZh: '左腿', pivot: [405, 1160], tip: [350, 1260], parent: 'torso', polygon: [[370, 1137], [312, 1243], [388, 1283], [446, 1177]]},
+  {id: 'thighR', labelZh: '右腿', pivot: [650, 1150], tip: [700, 1260], parent: 'torso', polygon: [[611, 1150], [663, 1270], [737, 1236], [685, 1116]]},
+  {id: 'upperArmR', labelZh: '右上臂', pivot: [610, 515], tip: [700, 650], parent: 'torso', polygon: [[574, 528], [669, 671], [731, 629], [636, 486]]},
+  {id: 'torso', labelZh: '身體', pivot: [540, 760], angle: 0, parent: null, polygon: [[0, 0], [1024, 0], [1024, 1536], [0, 1536]]},
 ];
 
 const shaRegions = [
-  {id: 'head', labelZh: '頭', pivot: [430.0, 480.0], angle: 0, parent: 'torso', polygon: [[320.0, 340.0], [560.0, 340.0], [560.0, 520.0], [460.0, 520.0], [320.0, 520.0]]},
-  {id: 'lowerArmL', labelZh: '左手', pivot: [180.0, 700.0], tip: [120.0, 840.0], parent: 'upperArmL', polygon: [[145.1, 651.9], [52.1, 868.9], [145.9, 909.1], [238.9, 692.1]]},
-  {id: 'upperArmL', labelZh: '左上臂', pivot: [300.0, 560.0], tip: [180.0, 700.0], parent: 'torso', polygon: [[296.4, 472.0], [104.4, 696.0], [195.6, 774.0], [387.6, 550.0]]},
-  {id: 'lowerArmR', labelZh: '右手', pivot: [700.0, 660.0], tip: [820.0, 760.0], parent: 'upperArmR', polygon: [[643.4, 679.2], [829.4, 834.2], [894.6, 755.8], [708.6, 600.8]]},
-  {id: 'shinL', labelZh: '左小腿', pivot: [280.0, 1050.0], tip: [200.0, 1180.0], parent: 'thighL', polygon: [[250.0, 995.7], [122.0, 1203.7], [214.0, 1260.3], [342.0, 1052.3]]},
-  {id: 'shinR', labelZh: '右小腿', pivot: [560.0, 1050.0], tip: [580.0, 1185.0], parent: 'thighR', polygon: [[502.6, 1030.9], [534.6, 1246.9], [641.4, 1231.1], [609.4, 1015.1]]},
-  {id: 'thighL', labelZh: '左腿', pivot: [340.0, 880.0], tip: [280.0, 1050.0], parent: 'torso', polygon: [[307.4, 792.0], [208.4, 1072.5], [321.6, 1112.5], [420.6, 832.0]]},
-  {id: 'thighR', labelZh: '右腿', pivot: [500.0, 880.0], tip: [560.0, 1050.0], parent: 'torso', polygon: [[419.4, 832.0], [518.4, 1112.5], [631.6, 1072.5], [532.6, 792.0]]},
+  // artmatch1: keep the cape, sash and skirt on torso; articulate only anatomical limb cores.
+  {id: 'head', labelZh: '頭', pivot: [520, 430], angle: 0, parent: 'torso', polygon: [[305, 92], [650, 92], [665, 430], [575, 510], [430, 500], [305, 330]]},
+  {id: 'lowerArmL', labelZh: '左手', pivot: [260, 640], tip: [285, 900], parent: 'upperArmL', polygon: [[216, 638], [243, 914], [329, 906], [302, 630]]},
+  {id: 'upperArmL', labelZh: '左上臂', pivot: [350, 460], tip: [260, 640], parent: 'torso', polygon: [[314, 442], [220, 630], [300, 670], [394, 482]]},
+  {id: 'lowerArmR', labelZh: '右手', pivot: [690, 575], tip: [835, 605], parent: 'upperArmR', polygon: [[680, 614], [837, 646], [854, 564], [697, 532]]},
+  {id: 'shinL', labelZh: '左小腿', pivot: [382, 1080], tip: [350, 1290], parent: 'thighL', polygon: [[340, 1068], [307, 1300], [393, 1313], [426, 1081]]},
+  {id: 'shinR', labelZh: '右小腿', pivot: [575, 1080], tip: [600, 1300], parent: 'thighR', polygon: [[532, 1074], [558, 1310], [644, 1300], [618, 1064]]},
+  {id: 'thighL', labelZh: '左腿', pivot: [410, 970], tip: [382, 1080], parent: 'torso', polygon: [[371, 950], [340, 1073], [424, 1095], [455, 972]]},
+  {id: 'thighR', labelZh: '右腿', pivot: [545, 970], tip: [575, 1080], parent: 'torso', polygon: [[505, 972], [538, 1093], [620, 1071], [587, 950]]},
   {id: 'staff', labelZh: '降妖寶杖', pivot: [850.0, 700.0], angle: 0, parent: 'lowerArmR', polygon: [[805.0, 200.0], [905.0, 200.0], [895.0, 1400.0], [795.0, 1400.0]]},
-  {id: 'upperArmR', labelZh: '右上臂', pivot: [560.0, 550.0], tip: [700.0, 660.0], parent: 'torso', polygon: [[473.9, 558.7], [697.9, 734.7], [772.1, 640.3], [548.1, 464.3]]},
-  {id: 'torso', labelZh: '身體', pivot: [430.0, 700.0], angle: 0, parent: null, polygon: [[0.0, 0.0], [1024.0, 0.0], [1024.0, 1536.0], [0.0, 1536.0]]},
+  {id: 'upperArmR', labelZh: '右上臂', pivot: [580, 500], tip: [690, 575], parent: 'torso', polygon: [[560, 537], [684, 622], [716, 548], [592, 463]]},
+  {id: 'torso', labelZh: '身體', pivot: [435, 735], angle: 0, parent: null, polygon: [[0, 0], [1024, 0], [1024, 1536], [0, 1536]]},
 ];
 
 /** Characters whose region sets are already in template pixel space. */
@@ -239,10 +240,10 @@ function cloneRegions(src) {
 }
 
 /** Design-space content bboxes for native region sets (pre-artmatch1 templates). */
-const NATIVE_DESIGN_BBOX = {
-  'tangseng-v1': {x0: 51, y0: 198, x1: 971, y1: 1336},
+export const NATIVE_DESIGN_BBOX = {
+  'tangseng-v1': {x0: 80, y0: 92, x1: 943, y1: 1431},
   'bajie-v1': {x0: 49, y0: 248, x1: 974, y1: 1286},
-  'sha-v1': {x0: 51, y0: 330, x1: 971, y1: 1204},
+  'sha-v1': {x0: 74, y0: 92, x1: 948, y1: 1442},
 };
 
 export function resolveCutRegions(ch, contentBox, canvasW, canvasH) {
@@ -311,7 +312,7 @@ export function buildProfileRig(source, characterMeta = null) {
   const designH = DESIGN_CONTENT_BBOX.y1 - DESIGN_CONTENT_BBOX.y0;
   const contentH = Math.max(1, contentBox.y1 - contentBox.y0);
   const ratio = contentH / designH;
-  const blendFloor = ch.id === 'wukong-v2' ? 0 : ch.id === 'tangseng-v1' ? 30 : ch.id === 'bajie-v1' ? 32 : 26;
+  const blendFloor = ch.id === 'wukong-v2' ? 34 : ch.id === 'tangseng-v1' ? 55 : ch.id === 'bajie-v1' ? 32 : 55;
   const layers = regions.map(() => new ImageData(w, h));
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++) {

@@ -58,6 +58,7 @@ const {
   DESIGN_CONTENT_BBOX,
   normalizedStageScale,
   REFERENCE_CONTENT_HEIGHT,
+  NATIVE_DESIGN_BBOX,
 } = await import('../src/profileRig.js');
 const {getCharacter} = await import('../src/characters.js');
 
@@ -114,6 +115,13 @@ test('tangseng native regions have no staff/tail; bajie/sha keep staff drop tail
   const wu = resolveCutRegions(getCharacter('wukong-v2'), box, 1024, 1536);
   assert.ok(wu.some((r) => r.id === 'tail'));
   assert.ok(wu.some((r) => r.id === 'staff'));
+});
+
+test('artmatch1 native design boxes match their opaque template content boxes', () => {
+  for (const id of ['tangseng-v1', 'bajie-v1', 'sha-v1']) {
+    const imageData = loadPngImageData(`public/characters/${id}/template.png`);
+    assert.deepEqual(opaqueContentBbox(imageData), NATIVE_DESIGN_BBOX[id], id);
+  }
 });
 
 const ARM_IDS = ['upperArmL', 'lowerArmL', 'upperArmR', 'lowerArmR'];
