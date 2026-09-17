@@ -1,5 +1,6 @@
 import { drawPuppet } from "./drawPuppet.js";
 import { resolveManualJoints } from "./dragPose.js";
+import { rodSegmentsForPose } from "./rodControls.js";
 export function renderArtwork(rig, images, pose, width = 900, height = 720) {
   const c = document.createElement("canvas");
   c.width = width;
@@ -8,6 +9,7 @@ export function renderArtwork(rig, images, pose, width = 900, height = 720) {
   // solo/live stage canvas uses theatrical framed screen instead.
   drawPuppet(c.getContext("2d"), rig, images, {
     joints: resolveManualJoints(rig, pose),
+    backRods: rodSegmentsForPose(rig, pose, width, height),
     scale: pose.scale,
     backdrop: "cream",
   });

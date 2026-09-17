@@ -1,13 +1,14 @@
 /**
  * Manual drag pose: fixed bone lengths, parent carries children.
- * Handles: torso (translate), wrists / ankles (2-bone IK).
+ * Handles: torso (translate), physical brad pins (single-joint rotation),
+ * wrists / ankles (2-bone IK).
  */
 
 const HANDLE_HIT_PX = 44;
 
 /**
  * @typedef {{ x: number, y: number, rotation: number }} Joint
- * @typedef {{ id: string, kind: 'torso' | 'wrist' | 'ankle', x: number, y: number, chain?: string[] }} Handle
+ * @typedef {{ id: string, kind: 'torso' | 'joint' | 'wrist' | 'ankle', x: number, y: number, chain?: string[], partId?: string }} Handle
  */
 
 /**
@@ -27,6 +28,7 @@ export function createManualPose(rig, layout) {
     rootY: layout.cy,
     scale,
     localRot,
+    rodEnds: {},
   };
 }
 
@@ -40,6 +42,9 @@ export function clonePose(pose) {
     rootY: pose.rootY,
     scale: pose.scale,
     localRot: new Map(pose.localRot),
+    rodEnds: Object.fromEntries(
+      Object.entries(pose.rodEnds || {}).map(([id, point]) => [id, {...point}]),
+    ),
   };
 }
 
@@ -52,6 +57,9 @@ export function applyPose(target, saved) {
   target.rootY = saved.rootY;
   target.scale = saved.scale;
   target.localRot = new Map(saved.localRot);
+  target.rodEnds = Object.fromEntries(
+    Object.entries(saved.rodEnds || {}).map(([id, point]) => [id, {...point}]),
+  );
 }
 
 /**
@@ -159,6 +167,25 @@ export function getHandles(rig, pose, joints) {
     handles.push({ id: 'torso', kind: 'torso', x: torso.x, y: torso.y - 40 * scale });
   }
 
+  // These are the eight punched brad positions visible on the back of the
+  // classroom puppet: shoulder, elbow, hip and knee on each side.  A pin is
+  // the pivot of the card attached at that point, so dragging it rotates that
+  // card while the pin itself remains connected to its parent.
+  for (const partId of [
+    'upperArmL', 'lowerArmL', 'upperArmR', 'lowerArmR',
+    'thighL', 'shinL', 'thighR', 'shinR',
+  ]) {
+    const joint = joints.get(partId);
+    if (!joint) continue;
+    handles.push({
+      id: partId + '-pin',
+      kind: 'joint',
+      partId,
+      x: joint.x,
+      y: joint.y,
+    });
+  }
+
   const chains = [
     { kind: 'wrist', upper: 'upperArmL', lower: 'lowerArmL' },
     { kind: 'wrist', upper: 'upperArmR', lower: 'lowerArmR' },
@@ -213,6 +240,11 @@ export function applyDrag(rig, pose, handle, x, y, dragMeta = {}) {
     return;
   }
 
+  if (handle.kind === 'joint' && handle.partId) {
+    rotateAtBrad(rig, pose, handle.partId, x, y);
+    return;
+  }
+
   if ((handle.kind === 'wrist' || handle.kind === 'ankle') && handle.chain) {
     if (pose.facing === -1) {
       const unmirrored = clonePose(pose);
@@ -221,6 +253,31 @@ export function applyDrag(rig, pose, handle, x, y, dragMeta = {}) {
       pose.localRot = unmirrored.localRot;
     } else twoBoneIk(rig, pose, handle.chain[0], handle.chain[1], x, y);
   }
+}
+
+function rotateAtBrad(rig, pose, partId, x, y) {
+  if (pose.facing === -1) {
+    const unmirrored = clonePose(pose);
+    unmirrored.facing = 1;
+    rotateAtBrad(rig, unmirrored, partId, 2 * pose.rootX - x, y);
+    pose.localRot = unmirrored.localRot;
+    return;
+  }
+  const joints = resolveManualJoints(rig, pose);
+  const node = joints.get(partId);
+  const part = rig.parts.find((candidate) => candidate.id === partId);
+  if (!node || !part || Math.hypot(x - node.x, y - node.y) < 6) return;
+  const w = (part.width || 0) * pose.scale;
+  const h = (part.height || 0) * pose.scale;
+  const px = (part.pivot?.x ?? 0.5) * w;
+  const py = (part.pivot?.y ?? 0.5) * h;
+  const localX = w * (part.tip?.x ?? 0.5) - px;
+  const localY = h * (part.tip?.y ?? 1) - py;
+  const desiredAbsolute = Math.atan2(y - node.y, x - node.x) - Math.atan2(localY, localX);
+  const parentId = part.defaultPose?.parent;
+  const parentRotation = parentId ? (joints.get(parentId)?.rotation ?? 0) : 0;
+  pose.localRot.set(partId, desiredAbsolute - parentRotation);
+  clampProfileJoint(rig, pose, partId);
 }
 
 /**
@@ -288,6 +345,20 @@ function twoBoneIk(rig, pose, upperId, lowerId, tx, ty) {
   const headingLower = Math.atan2(hy, hx);
   const absLowerRot = headingLower - Math.PI / 2;
   pose.localRot.set(lowerId, absLowerRot - newUpper.rotation);
+  clampProfileJoint(rig, pose, upperId);
+  clampProfileJoint(rig, pose, lowerId);
+}
+
+/** Limit joint micro-adjustments; rod control retains its separate swing range. */
+function clampProfileJoint(rig, pose, id) {
+  if (!rig.profile || !rig.id) return;
+  if ((rig.id === 'wukong-v2' || rig.id === 'wukong') && !rig.prototypeRig) return;
+  const part = rig.parts.find((p) => p.id === id);
+  const base = part?.defaultPose?.rotation || 0;
+  const legLimit = rig.id === 'bajie-v1' ? (id.startsWith('shin') ? 0.95 : 0.65) : 0.3;
+  const limit = id.startsWith('upperArm') ? 0.42 : id.startsWith('lowerArm') ? 0.58 : legLimit;
+  const value = pose.localRot.get(id);
+  if (typeof value === 'number') pose.localRot.set(id, clamp(value, base - limit, base + limit));
 }
 
 function upperParentRotation(rig, pose, upperId) {

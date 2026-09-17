@@ -26,6 +26,7 @@ import {
 } from "../src/colorStorage.js";
 import { buildBoundaryMask, strokePaint, floodFill, opaqueBounds, applyPhotoCover } from "../src/colorFill.js";
 import { coverFitTransform, maskToTemplateAlpha } from "../src/photoImport.js";
+import { armRotationFromRod } from "../src/rodControls.js";
 const rig = JSON.parse(
   readFileSync(
     new URL("../public/characters/wukong/rig.json", import.meta.url),
@@ -61,6 +62,11 @@ test("staff follows right wrist and forearm after IK", () => {
       j.get("lowerArmR").rotation + p.localRot.get("staff"),
     );
   }
+});
+test("arm rod follows its angle around the shoulder and clamps extreme swings", () => {
+  assert.equal(armRotationFromRod(0.2, 0.2, Math.PI / 2, Math.PI / 2 + 0.3), 0.5);
+  assert.ok(Math.abs(armRotationFromRod(0.2, 0.2, Math.PI / 2, Math.PI / 2 + 0.3, -1) + 0.1) < 1e-12);
+  assert.ok(armRotationFromRod(0, 0, 0, Math.PI) < Math.PI / 2);
 });
 test("normalized pose scales consistently", () => {
   const p = createManualPose(rig, { cx: 450, cy: 375, scale: 0.8 });
@@ -206,14 +212,14 @@ test('dragging root far away is constrained back onto stage', async () => {
 
 test('whole-figure artwork archives with its asset version and returns intact', async () => {
   await archiveAndStart();
-  assert.equal((await readProject()).assetVersion,'wukong-profile-jointfix1');
+  assert.equal((await readProject()).assetVersion,'wukong-profile-jointfix3');
   await saveColoredPart('wukong-v2','whole',new Blob(['whole-painted-figure']));
   await updateProject({title:'側身悟空'});
   await archiveAndStart();
   const archive=(await getArchives()).find(x=>x.project.title==='側身悟空');
   assert.equal(archive.project.characterId,'wukong-v2');
   await restoreArchive(archive);
-  assert.equal((await readProject()).assetVersion,'wukong-profile-jointfix1');
+  assert.equal((await readProject()).assetVersion,'wukong-profile-jointfix3');
   assert.equal(await(await loadColoredPart('wukong-v2','whole')).text(),'whole-painted-figure');
 });
 
@@ -259,10 +265,12 @@ test('left-facing hand drag is the exact reflection of right-facing drag', () =>
 test('facing survives clone, save, reload and old saves default right', async () => {
   const {clonePose,applyPose}=await import('../src/dragPose.js');
   const left=createManualPose(rig,{cx:450,cy:310,scale:.62});left.facing=-1;
+  left.rodEnds={left:{x:210,y:820},right:{x:690,y:810}};
   const saved=encodePose(clonePose(left),900,720);
   const restored=decodePose(saved,1800,1440);
   const target=createManualPose(rig,{cx:1,cy:1});applyPose(target,restored);
   assert.equal(target.facing,-1);assert.equal(target.rootX,900);
+  assert.deepEqual(target.rodEnds,{left:{x:420,y:1640},right:{x:1380,y:1620}});
   delete saved.facing;assert.equal(decodePose(saved,900,720).facing,1);
 });
 
@@ -368,6 +376,32 @@ test("switching project characterId does not wipe other character whole blobs", 
   assert.equal(await loadColoredPart("tangseng-v1", "whole"), null);
   assert.equal(await (await loadColoredPart("wukong-v2", "whole")).text(), "wukong-paint");
   assert.equal((await readProject()).characterId, "bajie-v1");
+});
+
+test("character selection restores its own three frames without relabeling another character's story", async () => {
+  await archiveAndStart('sha-v1');
+  await updateProject({characterId: 'wukong-v2', poses: [null, null, null]});
+  const wukongPose = {facing: -1, rotations: {upperArmR: 0.4}, rods: {right: {x: 0.8, y: 1.2}}};
+  await updateProject({title: '悟空三格', poses: [wukongPose, wukongPose, wukongPose]});
+  await updateProject({characterId: 'sha-v1'});
+  assert.deepEqual((await readProject()).poses, [null, null, null]);
+  const shaPose = {facing: 1, rotations: {upperArmR: -0.2}, rods: {left: {x: 0.2, y: 1.1}}};
+  await updateProject({title: '沙僧一格', poses: [shaPose, null, null]});
+  await updateProject({characterId: 'wukong-v2'});
+  let project = await readProject();
+  assert.equal(project.id, 'current');
+  assert.equal(project.title, '悟空三格');
+  assert.deepEqual(project.poses, [wukongPose, wukongPose, wukongPose]);
+  await updateProject({characterId: 'sha-v1'});
+  project = await readProject();
+  assert.equal(project.title, '沙僧一格');
+  assert.deepEqual(project.poses, [shaPose, null, null]);
+  await updateProject({characterId: 'wukong-v2', assetVersion: getCharacter('wukong-v2').assetVersion});
+  assert.deepEqual((await readProject()).poses, [wukongPose, wukongPose, wukongPose]);
+  await saveColoredPart('wukong-v2', 'whole', new Blob(['version-change-color']));
+  await updateProject({assetVersion: 'future-rig-version'});
+  assert.deepEqual((await readProject()).poses, [null, null, null]);
+  assert.equal(await (await loadColoredPart('wukong-v2', 'whole')).text(), 'version-change-color');
 });
 
 test("mask helper keeps outline and clears outside for any template size", () => {

@@ -36,7 +36,10 @@ function syncPipelineLinks(ch) {
   if (hint) hint.textContent = `畫／影相入${label}`;
   if (startHint) startHint.textContent = `① 進入畫${label}`;
   const cont = document.getElementById('continue');
-  if (cont && !cont.hidden) cont.href = `./color.html${q}`;
+  if (cont && !cont.hidden) {
+    cont.href = `./color.html${q}`;
+    document.getElementById('continueHint').textContent = `繼續畫${label}`;
+  }
   if (startBtn) startBtn.href = `./color.html${q}`;
 }
 

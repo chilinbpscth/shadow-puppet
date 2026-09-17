@@ -5,7 +5,11 @@ export function moveBodyRod(rig, base, dx, dy) {
   const pose = clonePose(base);
   pose.rootX += dx;
   pose.rootY += dy;
-  if (!rig.profile) return pose;
+  // The flowing robe characters keep their feet and robe on one continuous
+  // silhouette. Only Wukong has enough separated leg artwork for the small
+  // automatic walking aid; other characters should translate intact until a
+  // user explicitly moves an articulated joint.
+  if (!rig.profile || (rig.id && !['wukong', 'wukong-v2'].includes(rig.id))) return pose;
   const phase = dx * (base.facing || 1) / (95 * base.scale) * Math.PI;
   const stride = Math.sin(phase) * .3;
   const lift = Math.min(.2, Math.max(0, -dy) / 170);

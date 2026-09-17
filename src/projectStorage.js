@@ -37,9 +37,17 @@ export async function updateProject(patch) {
     const r = st.get('current');
     r.onsuccess = () => {
       const base = r.result || emptyProject(patch?.characterId);
+      if (patch?.characterId && patch.characterId !== base.characterId) {
+        st.put({...base, id: 'character-' + base.characterId});
+        const selected = st.get('character-' + patch.characterId);
+        selected.onsuccess = () => write(selected.result || emptyProject(patch.characterId));
+      } else write(base);
+    };
+    function write(base) {
       value = {
         ...base,
         ...patch,
+        id: 'current',
         updatedAt: Date.now(),
       };
       // Keep assetVersion in sync when characterId changes without explicit assetVersion
@@ -47,8 +55,10 @@ export async function updateProject(patch) {
         const ch = getCharacter(patch.characterId);
         if (ch) value.assetVersion = ch.assetVersion;
       }
+      if (value.assetVersion !== base.assetVersion && !Object.hasOwn(patch, 'poses'))
+        value.poses = [null, null, null];
       st.put(value);
-    };
+    }
     tx.oncomplete = () => {
       db.close();
       resolve(value);
@@ -145,6 +155,9 @@ export function encodePose(p, w, h) {
     y: p.rootY / h,
     scale: p.scale / Math.min(w, h),
     rotations: Object.fromEntries(p.localRot),
+    rods: Object.fromEntries(
+      Object.entries(p.rodEnds || {}).map(([id, point]) => [id, {x: point.x / w, y: point.y / h}]),
+    ),
   };
 }
 export function decodePose(p, w, h) {
@@ -154,5 +167,8 @@ export function decodePose(p, w, h) {
     rootY: p.y * h,
     scale: p.scale * Math.min(w, h),
     localRot: new Map(Object.entries(p.rotations)),
+    rodEnds: Object.fromEntries(
+      Object.entries(p.rods || {}).map(([id, point]) => [id, {x: point.x * w, y: point.y * h}]),
+    ),
   };
 }

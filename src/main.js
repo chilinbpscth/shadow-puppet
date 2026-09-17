@@ -14,7 +14,7 @@ import {
   applyDrag,
 } from './dragPose.js';
 import { applyPreset, getPreset } from './posePresets.js';
-import { createRodControls } from './rodControls.js';
+import { createRodControls } from './rodControls.js?v=jointfix15';
 import { normalizedStageScale } from './profileRig.js';
 
 const canvas = document.getElementById('stage');
@@ -116,10 +116,17 @@ function setStatus(msg, isError = false) {
 function layoutCenter() {
   const profile = !!state?.rig?.profile;
   const baseScale = profile ? 0.62 : 0.8;
-  const scale =
+  const preferredScale =
     profile && state?.rig?.kind !== 'horse'
       ? normalizedStageScale(state.rig, baseScale)
       : baseScale;
+  // Keep the full puppet inside the actual stage canvas. The old fixed 0.62
+  // profile scale made the 1450px Wukong silhouette taller than the 720px
+  // stage, clipping the feet on normal desktop and iPad layouts.
+  const fitScale = state?.rig?.contentHeight
+    ? (canvas.height * 0.9) / state.rig.contentHeight
+    : preferredScale;
+  const scale = Math.min(preferredScale, fitScale);
   return {
     cx: canvas.width / 2,
     cy: canvas.height * (profile ? 0.43 : 0.52),
@@ -144,19 +151,30 @@ function fillPartList(rig) {
   }
 }
 
+function missionStory(i) {
+  if (i === 0) return `${state?.rig?.labelZh || '影偶'}收拾行裝，準備西行。`;
+  if (i === 2) {
+    const prop = state?.rig?.parts.find(p => p.id === 'staff')?.labelZh;
+    return prop ? `舉起${prop}，迎戰前方！` : '擺出迎戰姿勢，迎戰前方！';
+  }
+  return MISSIONS[i].story;
+}
+
 function updateMissionUI() {
   document.getElementById('btnDownload').disabled = savedPoses.some(p => !p);
   const m = MISSIONS[missionIndex];
   const who = state?.rig?.labelZh || '影偶';
   taskMain.textContent = [
-    `慢慢拖身棍，帶${who}出發；提一提，試吓移動。`,
-    `撥動轉棍換方向，用棍帶${who}演出遇險。`,
-    `提起手棍向前推或畫弧，試吓動作（有棒角色可揮棒）。`,
+    `拖兩支臂棍，帶${who}出發；提一提，試吓擺手。`,
+    `撥動轉身方向，用兩支臂棍帶${who}演出遇險。`,
+    `提起左右臂棍向前推或畫弧，試吓動作（有武器角色可連動道具）。`,
   ][missionIndex];
   const tipEl = document.getElementById('artTip');
   if (tipEl) tipEl.textContent = m.tip;
   for (const card of missionCardsEl.querySelectorAll('.mission-card')) {
     const i = Number(card.dataset.mission);
+    const story = card.querySelector('.mission-story');
+    if (story) story.textContent = missionStory(i);
     card.classList.toggle('active', i === missionIndex);
     const selectBtn = card.querySelector('.mission-select');
     if (selectBtn) {
@@ -188,16 +206,17 @@ function renderManual() {
   constrainPose(state.rig, manualPose, canvas.width, canvas.height);
   const joints = jointsForDraw();
   handles = getHandles(state.rig, manualPose, joints);
+  rodControls?.setVisible(mode === 'manual' && playbackStep < 0);
   drawPuppet(ctx, state.rig, state.images, {
     showDebug: debugToggle.checked,
     cx: manualPose.rootX,
     cy: manualPose.rootY,
     scale: manualPose.scale,
     joints,
+    backRods: rodControls?.getCanvasRods() || [],
     clear: true,
   });
 
-  rodControls?.setVisible(mode === 'manual' && playbackStep < 0);
   rodControls?.syncGripPositions();
 
   if (playbackStep < 0 && showJointHandles()) {
@@ -242,7 +261,7 @@ function setControlMode(next) {
   if (dragHintEl) {
     dragHintEl.textContent =
       m === 'rods'
-        ? '\u63d0\u793a\uff1a\u62d6\u52d5\u4e0b\u65b9\u865b\u64ec\u68cd\u64fa\u59ff\u52e2'
+        ? '\u63d0\u793a\uff1a\u62d6\u52d5\u4e0b\u65b9\u5169\u652f\u81c2\u68cd\u64fa\u59ff\u52e2'
         : '\u63d0\u793a\uff1a\u62d6\u52d5\u624b\u8173\u5713\u9ede\u64fa\u59ff\u52e2';
   }
   if (mode === 'manual') {
@@ -625,6 +644,7 @@ function markInteracted() {
 
 function resetStanding() {
   rodControls?.cancelDrags();
+  rodControls?.resetGripPositions();
   if (!state) return;
   dirtyPose = true;
   updateMissionUI();
@@ -708,10 +728,12 @@ function selectMission(i) {
   else manualPose = createManualPose(state.rig, layoutCenter());
   updateMissionUI();
   if (mode === 'manual') renderManual();
-  setStatus(MISSIONS[i].story);
+  setStatus(missionStory(i));
 }
 function persistStory() {
   const patch = {
+    characterId: state.rig.id,
+    assetVersion: state.rig.assetVersion,
     title: document.getElementById('workTitle').value.trim() || '我的西遊記',
     poses: savedPoses.map((p) =>
       p ? encodePose(p, canvas.width, canvas.height) : null,
@@ -761,6 +783,10 @@ async function exportStory() {
       c.font = 'bold 28px sans-serif';
       c.fillText(i + 1 + '・' + MISSIONS[i].title, i * 900 + 450, 835);
     });
+    const png = out.toDataURL('image/png');
+    document.getElementById('storyExportImage').src = png;
+    document.getElementById('storyExportLink').href = png;
+    document.getElementById('storyExport').showModal();
     await downloadCanvas(out, '西遊記-三格故事.png');
     setStatus('三格圖已準備下載');
   } catch (e) {
@@ -812,7 +838,7 @@ async function runPlayback() {
         ' \u300c' +
         MISSIONS[i].title +
         '\u300d\u2014' +
-        MISSIONS[i].story,
+        missionStory(i),
     );
     playbackStep += 1;
     playbackTimer = setTimeout(show, 2000);
@@ -826,9 +852,16 @@ function bindUi() {
   document.getElementById('workTitle').addEventListener('change',()=>persistStory());
   window.addEventListener('beforeunload', ev=>{if(dirtyPose||projectSaveFailed||pendingProjectSaves){ev.preventDefault();ev.returnValue='';}});
   document.addEventListener('click',async ev=>{
-    if(!ev.target.closest('a[href="./color.html"]'))return;
-    ev.preventDefault();if(dirtyPose)await saveCurrentPose();else await persistStory();
-    if(!projectSaveFailed)location.href='./color.html';
+    const link = ev.target.closest(
+      '.topbar a[href^="./index.html"], .topbar a[href^="./color.html"], .topbar a[href^="./live.html"], .primary-actions a[href^="./live.html"]',
+    );
+    if(!link)return;
+    ev.preventDefault();
+    if(dirtyPose)await saveCurrentPose();else await persistStory();
+    if(!projectSaveFailed){
+      dirtyPose=false;
+      location.href=link.href;
+    }
   });
   modeManual.addEventListener('change', () => {
     if (modeManual.checked) setMode('manual');
@@ -929,16 +962,24 @@ async function init() {
     state = await loadRig();
     const project=await readProject();
     if(project){document.getElementById('workTitle').value=project.title;
-      project.poses.forEach((p,i)=>{savedPoses[i]=p?decodePose(p,canvas.width,canvas.height):null;});}
+      const sameRig = project.characterId === state.rig.id && project.assetVersion === state.rig.assetVersion;
+      if (sameRig) {
+        project.poses.forEach((p,i)=>{savedPoses[i]=p?decodePose(p,canvas.width,canvas.height):null;});
+      } else {
+        await updateProject({
+          characterId: state.rig.id,
+          assetVersion: state.rig.assetVersion,
+          poses: [null, null, null],
+        });
+      }}
     if (state.rig.profile) {
       const name = state.rig.labelZh || '影偶';
-      document.querySelector('.preview-note').textContent = `完整側身${name}・你的色彩會跟住影偶一起動`;
+      document.querySelector('.preview-note').textContent = `組裝${name}・你的色彩會跟住影偶一起動`;
       modeBody.disabled = true;
       document.getElementById('labBody').textContent = '身體驅動（此造型暫未開放，先用棍控）';
     }
     fillPartList(state.rig);
     manualPose = savedPoses[0] ? clonePose(savedPoses[0]) : createManualPose(state.rig, layoutCenter());
-
     if (rodRail) {
       rodControls = createRodControls({
         railEl: rodRail,

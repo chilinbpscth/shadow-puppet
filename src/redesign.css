@@ -8,6 +8,9 @@
   --gold: #a57b2e;
   color-scheme: light;
 }
+#storyExport { width: min(960px, 95vw); max-height: 90dvh; overflow: auto; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; }
+#storyExport img { display: block; width: 100%; height: auto; margin-bottom: 12px; }
+#storyExport form { margin-top: 12px; }
 @media (prefers-color-scheme: dark) {
   :root {
     --ground: #211e1a;
@@ -604,7 +607,7 @@ dialog::backdrop {
     font-size: 12px;
   }
   .stage-page #btnReset {
-    display: none;
+    display: inline-flex;
   }
   .stage-column {
     min-height: 150px;
@@ -653,7 +656,7 @@ dialog::backdrop {
 @media(orientation:portrait){.whole-workspace{gap:10px}.art-reference{width:24%;min-width:110px}.whole-tools #enterStage{margin-left:0}.whole-tools .palette{max-width:255px}}
 @media(max-width:600px){.art-reference{display:none}.whole-tools button{padding:8px;font-size:12px}.whole-tools #enterStage{padding:9px;font-size:13px}.step-badge{display:none}}
 
-.stage-column{position:relative}.rod-instruction{font-size:12px;text-align:center;margin:3px;color:var(--muted)}.rod-rail{height:64px;margin-top:2px;z-index:4}.rod-grip{width:92px;top:0;min-height:58px;z-index:4;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.rod-grip-knob{width:28px;height:34px;border-radius:7px;background:#9b723f;box-shadow:inset 3px 0 #ffffff30}.rod-grip--wrist .rod-grip-knob{background:#488595}.rod-grip.dragging{z-index:6}.rod-grip.dragging .rod-grip-knob{outline:3px solid var(--gold);outline-offset:3px}.rod-grip-label{white-space:nowrap;font-size:11px}.rod-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;overflow:visible}.rod-turn{display:flex;gap:8px;align-items:center;justify-content:center;font-size:12px;color:var(--muted);min-height:32px}.rod-turn input{width:130px;accent-color:var(--gold);touch-action:none}.rod-turn span{color:var(--gold)}.rod-source{text-align:center;font-size:10px;color:var(--muted);margin:2px 0}.rod-source a{color:var(--gold)}
+.stage-column{position:relative}.rod-instruction{font-size:12px;text-align:center;margin:3px;color:var(--muted)}.rod-rail{height:64px;margin-top:2px;z-index:4}.rod-grip{width:92px;top:0;min-height:58px;z-index:4;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.rod-grip-knob{width:28px;height:34px;border-radius:7px;background:#9b723f;box-shadow:inset 3px 0 #ffffff30}.rod-grip--wrist .rod-grip-knob,.rod-grip--arm .rod-grip-knob{background:rgba(122,168,179,.72);border-color:#e8f5f7;box-shadow:inset 3px 0 #ffffff70,0 0 0 1px #315f69}.rod-grip.dragging{z-index:6}.rod-grip.dragging .rod-grip-knob{outline:3px solid var(--gold);outline-offset:3px}.rod-grip-label{white-space:nowrap;font-size:11px}.rod-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;overflow:visible}.rod-lines line{filter:drop-shadow(0 0 1px rgba(25,52,58,.55))}.rod-turn{display:flex;gap:8px;align-items:center;justify-content:center;font-size:12px;color:var(--muted);min-height:32px}.rod-turn input{width:130px;accent-color:var(--gold);touch-action:none}.rod-turn span{color:var(--gold)}.rod-source{text-align:center;font-size:10px;color:var(--muted);margin:2px 0}.rod-source a{color:var(--gold)}
 @media(orientation:portrait){.rod-instruction{font-size:11px}.rod-source{font-size:9px}.rod-rail{height:58px}}
 
 /* P0 photo-into-puppet */

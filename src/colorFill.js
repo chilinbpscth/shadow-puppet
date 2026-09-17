@@ -80,7 +80,6 @@ export function floodFill(data, w, h, x, y, rgb, lock) {
   const sr = data[sp];
   const sg = data[sp + 1];
   const sb = data[sp + 2];
-  const sa = data[sp + 3];
 
   // Already same color — no-op
   if (sr === nr && sg === ng && sb === nb) return 0;
@@ -90,10 +89,9 @@ export function floodFill(data, w, h, x, y, rgb, lock) {
     const p = i * 4;
     if (data[p + 3] < ALPHA_MIN) return false;
     return (
-      data[p] === sr &&
-      data[p + 1] === sg &&
-      data[p + 2] === sb &&
-      data[p + 3] === sa
+      Math.abs(data[p] - sr) <= 24 &&
+      Math.abs(data[p + 1] - sg) <= 24 &&
+      Math.abs(data[p + 2] - sb) <= 24
     );
   };
 

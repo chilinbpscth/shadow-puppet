@@ -15,6 +15,22 @@ let data, original, lock, color = colors[0][1], tool = 'brush', size = 10, undoS
 let characterId = defaultCharacter().id;
 let characterLabel = defaultCharacter().labelZh;
 
+function colorTemplatePartId(ch) {
+  return ch?.colorTemplatePartId || 'whole';
+}
+
+async function loadColorTemplate(ch) {
+  if (!ch?.colorTemplateUrl) return loadTemplate(ch.id);
+  const image = new Image();
+  image.src = ch.colorTemplateUrl;
+  await image.decode();
+  const source = document.createElement('canvas');
+  source.width = image.naturalWidth;
+  source.height = image.naturalHeight;
+  source.getContext('2d').drawImage(image, 0, 0);
+  return source;
+}
+
 function message(text, error = false) {
   status.textContent = text;
   status.classList.toggle('is-error', error);
@@ -47,7 +63,8 @@ function save(doneMsg) {
       off.width = canvas.width;
       off.height = canvas.height;
       off.getContext('2d').putImageData(snapshot, 0, 0);
-      await saveColoredPart(characterId, 'whole', await canvasToPngBlob(off));
+      const ch = getCharacter(characterId);
+      await saveColoredPart(characterId, colorTemplatePartId(ch), await canvasToPngBlob(off));
       savedRevision = Math.max(savedRevision, version);
       document.getElementById('retry').hidden = true;
       if (savedRevision === revision) message(doneMsg || '已自動儲存・喜歡就可以上幕');
@@ -178,7 +195,9 @@ function syncChrome() {
   const title = document.getElementById('colorTitle');
   if (title) title.textContent = `畫你的${characterLabel}`;
   const intro = document.getElementById('colorIntro');
-  if (intro) intro.textContent = `在完整${characterLabel}上直接填色、畫花紋；亦可影紙稿入偶。喜歡就上幕，不用填滿。`;
+  if (intro) intro.textContent = ch?.colorTemplateUrl
+    ? `先在未組裝嘅${characterLabel}部件上填色、畫花紋；完成後再組裝上舞台。`
+    : `在完整${characterLabel}上直接填色、畫花紋；亦可影紙稿入偶。喜歡就上幕，不用填滿。`;
   const stage = document.getElementById('enterStage');
   if (stage) stage.textContent = `② 讓${characterLabel}上單機舞台 →`;
   const print = document.getElementById('printOutline');
@@ -272,13 +291,13 @@ async function init() {
       window.history.replaceState(null, '', u.pathname + u.search + u.hash);
     }
     syncChrome();
-    const template = await loadTemplate(characterId);
+    const template = await loadColorTemplate(ch);
     canvas.width = template.width;
     canvas.height = template.height;
     original = template.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
     data = copy(original);
     lock = buildBoundaryMask(original.data, canvas.width, canvas.height);
-    const blob = await loadColoredPart(characterId, 'whole');
+    const blob = await loadColoredPart(characterId, colorTemplatePartId(ch));
     if (blob) {
       const img = await blobToImage(blob);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -288,7 +307,7 @@ async function init() {
     render();
     ready = true;
     syncTools();
-    message(`可填色，或「影相入偶」套紙稿。唔使填晒先可以演。`);
+    message(ch.colorTemplateUrl ? '未組裝線稿已載入；填色後按「上單機舞台」，睇部件砌成你嘅影偶。' : '可填色，或「影相入偶」套紙稿。唔使填晒先可以演。');
   } catch (e) {
     message('未能載入原有作品，請重新載入：' + e.message, true);
   }

@@ -70,6 +70,7 @@ export function resolvePose(rig, layout) {
  *   joints?: Map<string, { x: number, y: number, rotation: number }> | null,
  *   clear?: boolean,
  *   backdrop?: 'stage' | 'cream',  // default 'stage' when clear; export uses 'cream'
+ *   backRods?: Array<{x1:number,y1:number,x2:number,y2:number,active?:boolean}>,
  * }} [opts]
  */
 export function drawPuppet(ctx, rig, images, opts = {}) {
@@ -107,20 +108,70 @@ export function drawPuppet(ctx, rig, images, opts = {}) {
     }
   }
 
+  drawBackRods(ctx, opts.backRods || []);
+
   const ordered = [...rig.parts].sort(
     (a, b) => (a.drawOrder ?? 0) - (b.drawOrder ?? 0),
   );
 
   for (const part of ordered) {
+    if (rig.profile && rig.id === 'sha-v1' && rig.prototypeRig !== 'sha-unassembled-v1' &&
+        (part.id.startsWith('thigh') || part.id.startsWith('shin'))) continue;
     const node = pose.get(part.id);
     const img = images.get(part.id);
     if (!node || !img) continue;
     drawPart(ctx, node, img, layout.scale);
   }
 
+  // Hinge covers represent the rivet/washer that physically joins two
+  // shadow-puppet pieces. They follow the parent-side joint, not the rotating
+  // child, so the connection remains visually intact during movement.
+  for (const cap of rig.jointCaps || []) {
+    const img = images.get(cap.id);
+    if (!img) continue;
+    const dp = cap.defaultPose || {};
+    const parent = dp.parent ? pose.get(dp.parent) : null;
+    const flipX = parent?.flipX || 1;
+    const parentX = parent?.x ?? layout.cx;
+    const parentY = parent?.y ?? layout.cy;
+    const parentRotation = parent?.rotation ?? 0;
+    const ox = (dp.x || 0) * layout.scale * flipX;
+    const oy = (dp.y || 0) * layout.scale;
+    const cos = Math.cos(parentRotation);
+    const sin = Math.sin(parentRotation);
+    drawPart(ctx, {
+      x: parentX + ox * cos - oy * sin,
+      y: parentY + ox * sin + oy * cos,
+      rotation: parentRotation + (dp.rotation || 0),
+      flipX,
+      part: cap,
+    }, img, layout.scale);
+  }
+
   if (showDebug) {
     drawDebug(ctx, rig, pose, layout.scale);
   }
+}
+
+function drawBackRods(ctx, rods) {
+  if (!rods.length) return;
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (const rod of rods) {
+    ctx.beginPath();
+    ctx.moveTo(rod.x1, rod.y1);
+    ctx.lineTo(rod.x2, rod.y2);
+    ctx.lineWidth = rod.active ? 12 : 10;
+    ctx.strokeStyle = rod.active ? 'rgba(105, 165, 178, .72)' : 'rgba(122, 168, 179, .46)';
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(rod.x1, rod.y1);
+    ctx.lineTo(rod.x2, rod.y2);
+    ctx.lineWidth = rod.active ? 3 : 2;
+    ctx.strokeStyle = 'rgba(232, 248, 250, .62)';
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function drawPart(ctx, node, img, scale) {
@@ -209,6 +260,8 @@ export function drawHandles(ctx, handles, opts = {}) {
     ctx.arc(h.x, h.y, r, 0, Math.PI * 2);
     if (h.kind === 'torso') {
       ctx.fillStyle = isActive ? 'rgba(255, 200, 80, 0.95)' : 'rgba(255, 180, 60, 0.88)';
+    } else if (h.kind === 'joint') {
+      ctx.fillStyle = isActive ? 'rgba(255, 235, 110, 0.98)' : 'rgba(235, 190, 55, 0.92)';
     } else if (h.kind === 'wrist') {
       ctx.fillStyle = isActive ? 'rgba(120, 220, 255, 0.95)' : 'rgba(80, 200, 255, 0.88)';
     } else {
